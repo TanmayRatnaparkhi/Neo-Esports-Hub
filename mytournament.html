@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Tournaments | Neo Esports Hub</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="p-4 bg-black text-white font-inter">
+
+  <h1 class="text-3xl font-bold text-cyan-400 mb-4">My Tournaments</h1>
+  <p class="text-white-400 mb-6">All tournaments you have joined.</p>
+
+  <div class="overflow-x-auto">
+    <table class="w-full bg-gray-900 rounded-xl border border-gray-700">
+      <thead class="bg-gray-800 text-cyan-300">
+        <tr  class="text-left">
+          <th  class="py-3.5 px-4 text-[15px] tracking-wide">Game</th>
+          <th  class="py-3.5 px-4 text-[15px] tracking-wide">Tournament ID</th>
+          <th  class="py-3.5 px-4 text-[15px] tracking-wide">Title</th>
+          <th  class="py-3.5 px-4 text-[15px] tracking-wide">Start Time</th>
+          <th  class="py-3.5 px-4 text-[15px] tracking-wide">Room ID</th>
+          <th  class="py-3.5 px-4 text-[15px] tracking-wide">Password</th>
+          <th  class="py-3.5 px-4 text-[15px] tracking-wide">Status</th>
+          <th>Joined On</th>
+        </tr>
+      </thead>
+      <tbody id="myTBody"></tbody>
+    </table>
+  </div>
+
+  <!-- FIREBASE SCRIPT -->
+ <script type="module">
+import {
+  auth,
+  db,
+  onAuthStateChanged
+} from "./js/firebase.js";
+
+import {
+  collection,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+
+const tbody = document.getElementById("myTBody");
+
+function formatDateAny(value) {
+  if (!value) return "-";
+
+  if (value?.toDate) {
+    return value.toDate().toLocaleString();
+  }
+
+  const parsed = new Date(value);
+  if (!isNaN(parsed.getTime())) {
+    return parsed.toLocaleString();
+  }
+  return "-";
+}
+
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="10" class="text-center py-6 text-gray-400">
+          Please login first.
+        </td>
+      </tr>`;
+    return;
+  }
+
+  try {
+    const ref = collection(db, "users", user.uid, "myTournaments");
+    const snap = await getDocs(ref);
+
+    if (snap.empty) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="10" class="text-center py-6 text-gray-400">
+            You haven't joined any tournaments yet.
+          </td>
+        </tr>`;
+      return;
+    }
+
+
+    const tournaments = [];
+
+snap.forEach((docSnap) => {
+    const t = docSnap.data();
+
+    tournaments.push({
+        id: docSnap.id,
+        ...t
+    });
+});
+
+// Sort by joinedAt → newest first
+tournaments.sort((a, b) => {
+    const j1 = a.joinedAt?.toDate ? a.joinedAt.toDate() : new Date(a.joinedAt);
+    const j2 = b.joinedAt?.toDate ? b.joinedAt.toDate() : new Date(b.joinedAt);
+    return j2 - j1; // DESCENDING (latest first)
+});
+
+let html = "";
+
+tournaments.forEach((t) => {
+    const startTime = formatDateAny(t.startTime);
+    const joinTime = formatDateAny(t.joinedAt || t.joinAt);
+
+    let roomId = "Hidden";
+    let roomPass = "Hidden";
+
+    // 15 min unlock rule stays same
+    if (t.startTime?.toDate) {
+        const start = t.startTime.toDate();
+        const now = new Date();
+        const diff = (start - now) / (1000 * 60);
+        if (diff <= 15) {
+            roomId = t.roomId || "-";
+            roomPass = t.roomPass || "-";
+        }
+    }
+
+    html += `
+        <tr class="border-b border-gray-700 hover:bg-cyan-500/5 transition">
+            <td class="py-3.5 px-4">${t.game || "-"}</td>
+            <td class="py-3.5 px-4">${t.id}</td>
+            <td class="py-3.5 px-4">${t.title || "-"}</td>
+            <td class="py-3.5 px-4">${startTime}</td>
+            <td class="py-3.5 px-4 text-cyan-400">${roomId}</td>
+            <td class="py-3.5 px-4 text-cyan-400">${roomPass}</td>
+            <td class="py-3.5 px-4">joined</td>
+            <td class="py-3.5 px-4">${joinTime}</td>
+        </tr>
+    `;
+});
+
+tbody.innerHTML = html;
+
+
+  } catch (err) {
+    console.error("Error loading tournaments:", err);
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="10" class="text-center py-6 text-red-400">
+          Error loading tournaments.
+        </td>
+      </tr>`;
+  }
+});
+</script>
+
+</body>
+</html>

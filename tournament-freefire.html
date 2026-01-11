@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Free Fire Tournaments | Neo Esport Hub</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="style.css">
+
+<style>
+@keyframes scan {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+.animate-scan {
+  animation: scan 2s linear infinite;
+}
+</style>
+</head>
+
+<body class="bg-black text-white">
+
+<!-- NAVBAR -->
+<header class="bg-black shadow-md sticky top-0 z-50 w-full">
+  <div class="max-w-full mx-auto px-6 py-3 flex justify-between items-center text-2xl">
+
+    <a href="#" class="text-3xl font-extrabold text-cyan-400 tracking-wide hover:text-white transition">
+      Neo Esports Hub
+    </a>
+
+    <nav class="hidden md:flex space-x-5 text-white font-semibold items-center">
+
+      <div id="walletBox"
+        class="relative overflow-hidden ml-4 px-4 py-2 rounded-lg font-bold cursor-pointer
+               bg-blue-600 text-white hover:bg-blue-700 transition flex items-center gap-2">
+        <span class="text-xl">🪙</span>
+        <span id="walletAmount">₹0</span>
+
+        <!-- Shiny animation -->
+        <span class="absolute inset-0 w-full h-full bg-gradient-to-r 
+          from-transparent via-white/40 to-transparent -translate-x-full animate-scan"></span>
+      </div>
+
+      <a href="index.html" class="hover:text-cyan-300">Home</a>
+      <a href="create-tournament.html" class="hover:text-cyan-300">Tournaments</a>
+      <a href="profile.html" class="hover:text-cyan-300">Profile</a>
+    </nav>
+
+    <button id="mobile-btn" class="md:hidden text-cyan-400 text-2xl">☰</button>
+  </div>
+
+  <div id="mobile-menu" class="hidden md:hidden px-4 pb-4 text-white bg-gray-800">
+    <a href="index.html" class="block py-1 hover:text-cyan-300">Home</a>
+    <a href="create-tournament.html" class="block py-1 hover:text-cyan-300">Tournaments</a>
+    <a href="profile.html" class="block py-1 hover:text-cyan-300">Profile</a>
+    <a id="walletBoxMobile" class="block py-1 text-yellow-400 font-bold">🪙: ₹0</a>
+  </div>
+</header>
+
+
+
+<!-- HERO -->
+<div class="bg-p2">
+<section class="tournament-hero">
+<img src="img/banner-ff.jpg" alt="FF Banner">
+<div class="hero-content">
+
+  <div class="hero-left">
+    <h1>Events</h1>
+    <div class="hero-links">
+      <a class="hero-link" href="join-contestFF.html">How To Join A Contest?</a>
+      <a class="hero-link" href="#" id="openPopup">Add FREE FIRE Username & ID</a>
+    </div>
+  </div>
+
+  <div class="hero-right">
+    <a href="https://docs.google.com/forms/d/e/1FAIpQLSdnpg3PqKnIVoZGHn_VoeyK7qVRrdRMfLwTlHYEwO4bcBQbJg/viewform?usp=publish-editor">
+      <button class="hero-cta1">CREATE TOURNAMENTS</button>
+    </a>
+    <a href="mytournament.html"><button class="hero-cta2">MY TOURNAMENTS</button></a>
+  </div>
+
+</div>
+</section>
+
+
+<!-- TOURNAMENT GRID -->
+<section>
+  <div id="tournamentGrid" class="tournament-grid" aria-live="polite"></div>
+</section>
+</div>
+<!-- ADD FREE FIRE USERNAME POPUP -->
+<div id="popupForm">
+  <div class="popup-card">
+    <h3>Add Free Fire Player</h3>
+    <input type="text" id="username" placeholder="Enter Username">
+    <input type="text" id="gameId" placeholder="Enter Game ID">
+    <button id="submitPlayer">Submit</button>
+    <button id="closePopup">Cancel</button>
+  </div>
+</div>
+
+<!-- ROOM POPUP -->
+<div id="roomPopup"
+  style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+  background:rgba(0,0,0,0.8); justify-content:center; align-items:center; z-index:9999;">
+  <div style="background:#111; padding:25px; border-radius:10px; text-align:center; width:300px;">
+    <h2 style="color:#00ffff;">Room Details</h2>
+    <p><strong>Room ID:</strong> <span id="roomId"></span></p>
+    <p><strong>Password:</strong> <span id="roomPass"></span></p>
+    <button id="closeRoomPopup"
+      style="background:#00ffff; border:none; color:#000; padding:10px 20px; border-radius:6px; cursor:pointer;">
+      Close
+    </button>
+  </div>
+</div>
+
+
+<script type="module">
+
+/* --------------------------------------------------
+   FIREBASE IMPORT
+-------------------------------------------------- */
+import {
+  db, auth, collection, getDocs, doc,
+  getDoc, setDoc, updateDoc, increment
+} from "./js/firebase.js";
+
+
+/* --------------------------------------------------
+   STATE
+-------------------------------------------------- */
+let tournaments = [];
+let playerInfo = { username: null, gameId: null };
+let pendingJoinTournament = null;
+
+
+/* --------------------------------------------------
+   LOAD PLAYER INFO
+-------------------------------------------------- */
+async function loadPlayerInfo() {
+  const user = auth.currentUser;
+  if (!user) return;
+
+  const snap = await getDoc(doc(db, "players", user.uid));
+  if (snap.exists() && snap.data().freefire) {
+    playerInfo = snap.data().freefire;
+  } else {
+    playerInfo = null;
+  }
+}
+
+
+/* --------------------------------------------------
+   SHOW POPUP ONLY IF NOT SAVED
+-------------------------------------------------- */
+document.getElementById("openPopup").addEventListener("click", async () => {
+  const user = auth.currentUser;
+  if (!user) return alert("Please login first.");
+
+  const ref = doc(db, "players", user.uid);
+  const snap = await getDoc(ref);
+
+  if (snap.exists() && snap.data().freefire?.username) {
+    alert("Your Free Fire Username & ID are already saved.");
+    return;
+  }
+
+  document.getElementById("popupForm").style.display = "flex";
+});
+
+
+/* --------------------------------------------------
+   SAVE FREE FIRE INFO
+-------------------------------------------------- */
+document.getElementById("submitPlayer").addEventListener("click", async () => {
+  const username = document.getElementById("username").value.trim();
+  const gameId = document.getElementById("gameId").value.trim();
+
+  if (!username || !gameId) return alert("Enter both Username & Game ID");
+
+  const user = auth.currentUser;
+  if (!user) return;
+
+  await updateDoc(doc(db, "players", user.uid), {
+    freefire: { username, gameId }
+  });
+
+  playerInfo = { username, gameId };
+
+  alert("Your Free Fire ID is saved!");
+  document.getElementById("popupForm").style.display = "none";
+});
+
+document.getElementById("closePopup").onclick = () =>
+  (document.getElementById("popupForm").style.display = "none");
+
+
+/* --------------------------------------------------
+   TIME HELPER FUNCTIONS
+-------------------------------------------------- */
+function isExpired(t) {
+  if (!t.rawStartTime?.toDate) return false;
+
+  const start = t.rawStartTime.toDate();
+  const now = new Date();
+  const expiry = new Date(start.getTime() + 24 * 60 * 60 * 1000);
+
+  return now > expiry;
+}
+
+function canShowRoom(t) {
+  const now = new Date();
+  const start = t.rawStartTime.toDate();
+  const diffMin = (start - now) / 60000;
+  return diffMin <= 15 && diffMin >= -120;
+}
+
+
+/* --------------------------------------------------
+   LOAD TOURNAMENTS FROM FIRESTORE
+-------------------------------------------------- */
+async function loadTournaments() {
+  tournaments = [];
+  tournamentGrid.innerHTML = "Loading...";
+
+  const snap = await getDocs(collection(db, "tournaments"));
+
+  snap.forEach(docSnap => {
+    const t = docSnap.data();
+
+    // Filter Free Fire Only
+    if ((t.game || "").toUpperCase() !== "FREE FIRE") return;
+
+    tournaments.push({
+      id: docSnap.id,
+      title: t.title,
+      banner: t.banner || "img/FF.png",
+      modes: t.modes || "Modes",
+      prize: "₹" + (t.prize || 0),
+      entryFee: t.entryFee || 0,
+      rawStartTime: t.startTime,
+      start: t.startTime?.toDate().toLocaleString() || "-",
+      progress: t.joinedPlayers || 0,
+      total: t.totalPlayers || 100,
+      roomId: t.roomId || "",
+      roomPass: t.roomPass || ""
+    });
+  });
+
+  renderTournaments();
+}
+/* --------------------------------------------------
+   RENDER TOURNAMENT CARDS
+-------------------------------------------------- */
+function renderTournaments() {
+  tournamentGrid.innerHTML = "";
+
+  tournaments.forEach(t => {
+    if (isExpired(t)) return;
+
+    const pct = Math.round((t.progress / t.total) * 100);
+
+    const card = document.createElement("div");
+    card.className = "rounded-xl overflow-hidden shadow-xl border border-cyan-500/30 bg-black mb-6";
+    card.style.minHeight = "360px";
+    card.style.minWidth = "350px";
+
+    const isStarted = new Date() > t.rawStartTime.toDate();
+
+    card.innerHTML = `
+      <div class="relative">
+        <img src="${t.banner}" class="w-full h-48 object-cover">
+        <span class="absolute top-2 right-2 bg-black/80 text-white text-xs px-2 py-1 rounded">MOBILE</span>
+      </div>
+
+      <div class="p-4 space-y-3">
+
+        <div class="flex justify-between items-center">
+          <h2 class="text-lg font-bold text-white">${t.title}</h2>
+          <span class="text-xs bg-cyan-600 text-white px-2 py-1 rounded">${t.id}</span>
+        </div>
+
+        <p class="text-sm text-gray-300"><strong>Start:</strong> ${t.start}</p>
+        <p class="text-sm text-gray-300">${t.modes}</p>
+
+        <p class="text-sm font-semibold text-cyan-300">
+          Entry Fee – ${t.entryFee === 0 ? "Free" : "₹" + t.entryFee}
+        </p>
+
+        <p class="text-sm text-yellow-300 font-bold">
+          Prize: ${t.prize}
+        </p>
+
+        <div class="text-xs text-white flex justify-between">
+          <span>${t.progress} Joined</span>
+          <span>${t.total} Slots</span>
+        </div>
+
+        <div class="w-full bg-gray-700 rounded-full h-2">
+          <div class="bg-cyan-500 h-2 rounded-full" style="width:${pct}%"></div>
+        </div>
+
+        <button 
+          class="join-btn font-bold px-4 py-2 rounded-lg w-full
+          ${isStarted ? "bg-gray-600 cursor-not-allowed text-gray-400" :
+                         "bg-yellow-400 hover:bg-yellow-500 text-black"}"
+          ${isStarted ? "disabled" : ""}
+        >
+          ${isStarted ? "Expired" : "Join Now"}
+        </button>
+      </div>
+    `;
+
+    const joinBtn = card.querySelector(".join-btn");
+
+    if (isStarted) {
+      joinBtn.onclick = () => alert("Tournament already started. You cannot join.");
+    } else {
+      joinBtn.onclick = () => openJoinConfirm(t);
+    }
+
+    tournamentGrid.appendChild(card);
+  });
+}
+
+
+/* --------------------------------------------------
+   JOIN CONFIRM POPUP
+-------------------------------------------------- */
+function openJoinConfirm(t) {
+  pendingJoinTournament = t;
+
+  document.body.insertAdjacentHTML("beforeend", `
+    <div id="joinModal" class="fixed inset-0 bg-black/70 flex items-center justify-center z-[999]">
+      <div class="bg-[#001219] border border-cyan-500 p-6 rounded-xl w-80 text-center shadow-xl">
+        <h2 class="text-cyan-400 text-xl font-bold mb-4">Confirm Join</h2>
+        <p class="text-gray-300 mb-4">
+          Entry Fee: <span class="text-yellow-400">₹${t.entryFee}</span><br>
+          Coins will be deducted. Continue?
+        </p>
+        <div class="flex justify-center gap-4">
+          <button id="confirmJoin" class="bg-cyan-500 text-black px-4 py-2 rounded-lg font-bold">Yes</button>
+          <button id="cancelJoin" class="bg-gray-600 text-white px-4 py-2 rounded-lg">No</button>
+        </div>
+      </div>
+    </div>
+  `);
+
+  document.getElementById("confirmJoin").onclick = finalJoin;
+  document.getElementById("cancelJoin").onclick = () =>
+    document.getElementById("joinModal").remove();
+}
+
+
+/* --------------------------------------------------
+   FINAL JOIN LOGIC
+-------------------------------------------------- */
+async function finalJoin() {
+  const t = pendingJoinTournament;
+  const user = auth.currentUser;
+
+  document.getElementById("joinModal").remove();
+
+  if (!t || !user) return;
+
+  const snap = await getDoc(doc(db, "players", user.uid));
+
+  if (!snap.exists() || !snap.data().freefire?.username) {
+    alert("Please add your Free Fire Username & ID first.");
+    return;
+  }
+
+  if (await userAlreadyJoined(user.uid, t.id))
+    return alert("You have already enrolled!");
+
+  const balance = await getWalletBalance(user.uid);
+
+  if (t.entryFee > 0) {
+    if (balance < t.entryFee)
+      return alert("Insufficient wallet balance.");
+
+    await deductWallet(user.uid, t.entryFee);
+    await updateWalletUI();
+  }
+
+  await setDoc(doc(db, "tournaments", t.id, "joinedUsers", user.uid), {
+    username: playerInfo.username,
+    gameId: playerInfo.gameId,
+    joinedAt: new Date(),
+    paymentStatus: t.entryFee === 0 ? "free" : "paid"
+  });
+
+  await updateDoc(doc(db, "tournaments", t.id), {
+    joinedPlayers: increment(1)
+  });
+
+  await setDoc(doc(db, "users", user.uid, "myTournaments", t.id), {
+    title: t.title,
+    game: "FREE FIRE",
+    startTime: t.rawStartTime,
+    roomId: t.roomId,
+    roomPass: t.roomPass,
+    joinedAt: new Date()
+  });
+
+  alert("Joined successfully! Room ID will be visible 15 minutes before match.");
+
+  loadTournaments();
+}
+
+
+/* --------------------------------------------------
+   WALLET HELPERS
+-------------------------------------------------- */
+async function getWalletBalance(uid) {
+  const snap = await getDoc(doc(db, "players", uid));
+  return snap.exists() ? snap.data().wallet?.available || 0 : 0;
+}
+
+async function deductWallet(uid, amount) {
+  await updateDoc(doc(db, "players", uid), {
+    "wallet.available": increment(-amount),
+    "wallet.total": increment(-amount)
+  });
+}
+
+async function updateWalletUI() {
+  const user = auth.currentUser;
+  if (!user) return;
+
+  const snap = await getDoc(doc(db, "players", user.uid));
+  const amount = snap.exists() ? snap.data().wallet?.available || 0 : 0;
+
+  walletAmount.textContent = "₹" + amount;
+  walletBoxMobile.textContent = "🪙: ₹" + amount;
+}
+
+
+/* --------------------------------------------------
+   CHECK IF USER ALREADY JOINED
+-------------------------------------------------- */
+async function userAlreadyJoined(uid, tid) {
+  const ref = doc(db, "tournaments", tid, "joinedUsers", uid);
+  return (await getDoc(ref)).exists();
+}
+
+
+/* --------------------------------------------------
+   INIT
+-------------------------------------------------- */
+window.addEventListener("DOMContentLoaded", async () => {
+  await loadPlayerInfo();
+  await loadTournaments();
+  setTimeout(updateWalletUI, 300);
+});
+
+
+</script>
+
+
+<!-- MOBILE MENU -->
+<script>
+const mobileBtn = document.getElementById('mobile-btn');
+const mobileMenu = document.getElementById('mobile-menu');
+mobileBtn.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
+</script>
+
+</body>
+</html>

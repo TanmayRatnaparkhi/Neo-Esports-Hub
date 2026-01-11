@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>BGMI Test</title>
+</head>
+<body>
+  <h2>BGMI Add Player Test</h2>
+  <input type="text" id="username" placeholder="Username">
+  <input type="text" id="gameId" placeholder="Game ID">
+  <button id="submit">Add Player</button>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    // 🔑 Replace with your Firebase config
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_BUCKET",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    async function addPlayer(username, gameId){
+      if(!username || !gameId){ alert("Enter both fields!"); return; }
+
+      const playersRef = collection(db, "BGMI");
+      const q = query(playersRef, where("username", "==", username));
+      const querySnapshot = await getDocs(q);
+
+      if(!querySnapshot.empty){
+        alert("Username already exists!");
+        return;
+      }
+
+      await addDoc(playersRef, { username: username, gameId: gameId });
+      alert("Player added!");
+    }
+
+    document.getElementById('submit').addEventListener('click', () => {
+      const username = document.getElementById('username').value.trim();
+      const gameId = document.getElementById('gameId').value.trim();
+      addPlayer(username, gameId);
+    });
+  </script>
+</body>
+</html>

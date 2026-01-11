@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Admin | Neo Esports Hub</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-950 text-white min-h-screen flex">
+
+<!-- SIDEBAR -->
+<aside class="w-64 bg-black p-6 flex flex-col gap-4 shadow-xl border-r border-gray-800">
+    <h1 class="text-2xl font-extrabold text-cyan-400 pb-3 border-b border-gray-700">
+        Admin Panel
+    </h1>
+
+    <button class="nav-btn px-3 py-2 rounded hover:bg-gray-800" data-target="dashboardSection">📊 Dashboard</button>
+    <button class="nav-btn px-3 py-2 rounded hover:bg-gray-800" data-target="tournamentSection">🏆 Tournaments</button>
+    <button class="nav-btn px-3 py-2 rounded hover:bg-gray-800" data-target="playerSection">🎮 Players</button>
+    <button class="nav-btn px-3 py-2 rounded hover:bg-gray-800" data-target="resultSection">🏅 Results</button>
+    <button class="nav-btn px-3 py-2 rounded hover:bg-gray-800" data-target="supportSection">🛠 Support</button>
+    <button class="nav-btn px-3 py-2 rounded hover:bg-gray-800" data-target="communicationSection">💬 Communication</button>
+
+    <button id="logoutBtn" class="mt-auto bg-red-600 px-4 py-2 rounded hover:bg-red-700">
+        Logout
+    </button>
+</aside>
+
+<!-- MAIN -->
+<main class="flex-1 p-6 space-y-10 overflow-y-auto">
+
+    <!-- DASHBOARD -->
+    <section id="dashboardSection" class="admin-section">
+        <div class="bg-gray-900 p-6 rounded-lg border border-gray-800">
+            <h2 class="text-xl font-bold text-green-400 mb-4">Dashboard Overview</h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-gray-800 p-4 rounded border border-gray-700">
+                    <h3 class="text-gray-400">Total Players</h3>
+                    <p id="totalPlayers" class="text-cyan-400 text-3xl font-bold mt-1">0</p>
+                </div>
+
+                <div class="bg-gray-800 p-4 rounded border border-gray-700">
+                    <h3 class="text-gray-400">Total Tournaments</h3>
+                    <p id="totalTournaments" class="text-cyan-400 text-3xl font-bold mt-1">0</p>
+                </div>
+
+                <div class="bg-gray-800 p-4 rounded border border-gray-700">
+                    <h3 class="text-gray-400">Total Joins</h3>
+                    <p id="totalJoins" class="text-cyan-400 text-3xl font-bold mt-1">0</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- TOURNAMENT SECTION -->
+    <section id="tournamentSection" class="admin-section hidden">
+
+        <div class="bg-gray-900 p-6 rounded-lg border border-gray-800">
+            <h2 class="text-xl font-bold text-yellow-400 mb-4">Manage Tournaments</h2>
+
+            <!-- Filter + Sort -->
+            <div class="flex justify-between items-center mb-4">
+                <div class="flex gap-3">
+                    <button class="filter-btn bg-gray-700 px-3 py-1 rounded" data-game="ALL">All</button>
+                    <button class="filter-btn bg-gray-700 px-3 py-1 rounded" data-game="BGMI">BGMI</button>
+                    <button class="filter-btn bg-gray-700 px-3 py-1 rounded" data-game="FreeFire">Free Fire</button>
+                    <button class="filter-btn bg-gray-700 px-3 py-1 rounded" data-game="Valorant">Valorant</button>
+                </div>
+
+                <select id="sortSelect" class="bg-gray-800 px-3 py-2 rounded">
+                    <option value="newest">Newest First</option>
+                    <option value="oldest">Oldest First</option>
+                    <option value="prizeHigh">Highest Prize</option>
+                    <option value="prizeLow">Lowest Prize</option>
+                    <option value="joinHigh">Most Joined</option>
+                    <option value="joinLow">Least Joined</option>
+                </select>
+            </div>
+
+            <div id="tournamentList" class="space-y-4"></div>
+
+            <button id="addTournamentBtn"
+                class="mt-6 bg-green-500 px-4 py-2 rounded hover:bg-green-600 w-full">
+                + Add Tournament
+            </button>
+        </div>
+
+        <!-- PLAYERS TABLE -->
+        <div class="bg-gray-900 p-6 rounded-lg border border-gray-800 mt-8">
+            <h2 class="text-xl font-bold text-blue-400 mb-4">Players Joined</h2>
+
+            <div class="overflow-x-auto">
+                <table class="w-full border border-gray-700 rounded-lg">
+                    <thead class="bg-gray-800 text-cyan-300">
+                        <tr>
+                            <th class="py-2 px-3">Tournament ID</th>
+                            <th class="py-2 px-3">User</th>
+                            <th class="py-2 px-3">Game ID</th>
+                            <th class="py-2 px-3">Join Time</th>
+                        </tr>
+                    </thead>
+                    <tbody id="playerTable"></tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <section id="playerSection" class="admin-section hidden"></section>
+    <section id="resultSection" class="admin-section hidden"></section>
+    <section id="supportSection" class="admin-section hidden"></section>
+    <section id="communicationSection" class="admin-section hidden"></section>
+
+</main>
+
+<!-- ADD TOURNAMENT POPUP -->
+<div id="tournamentPopup"
+    class="hidden fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center">
+    <div class="bg-gray-800 p-6 w-96 rounded-lg border border-gray-700">
+
+        <h2 class="text-xl font-bold text-cyan-400 mb-4">Add Tournament</h2>
+
+        <input id="game" class="w-full p-2 mb-2 rounded bg-gray-700" placeholder="Game">
+        <input id="title" class="w-full p-2 mb-2 rounded bg-gray-700" placeholder="Title">
+        <input id="banner" class="w-full p-2 mb-2 rounded bg-gray-700" placeholder="Banner URL">
+        <input id="modes" class="w-full p-2 mb-2 rounded bg-gray-700" placeholder="Modes">
+        <input id="prize" type="number" class="w-full p-2 mb-2 rounded bg-gray-700" placeholder="Prize ₹">
+        <input id="entryFee" type="number" class="w-full p-2 mb-2 rounded bg-gray-700" placeholder="Entry Fee ₹">
+        <input id="totalPlayers" type="number" class="w-full p-2 mb-2 rounded bg-gray-700" placeholder="Total Players">
+        <input id="startTime" type="datetime-local" class="w-full p-2 mb-2 rounded bg-gray-700">
+        <input id="roomId" class="w-full p-2 mb-2 rounded bg-gray-700" placeholder="Room ID">
+        <input id="roomPass" class="w-full p-2 mb-4 rounded bg-gray-700" placeholder="Room Password">
+
+        <button id="saveTournament" class="bg-green-500 px-4 py-2 rounded w-full">Save</button>
+        <button id="closeTournamentPopup" class="bg-red-500 mt-2 px-4 py-2 rounded w-full">Cancel</button>
+    </div>
+</div>
+
+<!-- EDIT POPUP -->
+<div id="editPopup"
+    class="hidden fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center">
+    <div class="bg-gray-800 p-6 w-96 rounded-lg border border-gray-700">
+
+        <h2 class="text-xl font-bold text-yellow-400 mb-4">Edit Tournament</h2>
+
+        <input id="editTitle" class="w-full p-2 mb-2 rounded bg-gray-700">
+        <input id="editModes" class="w-full p-2 mb-2 rounded bg-gray-700">
+        <input id="editPrize" type="number" class="w-full p-2 mb-2 rounded bg-gray-700">
+        <input id="editEntryFee" type="number" class="w-full p-2 mb-2 rounded bg-gray-700">
+        <input id="editTotalPlayers" type="number" class="w-full p-2 mb-2 rounded bg-gray-700">
+        <input id="editRoomId" class="w-full p-2 mb-2 rounded bg-gray-700">
+        <input id="editRoomPass" class="w-full p-2 mb-4 rounded bg-gray-700">
+        <input id="editStartTime" type="datetime-local" class="w-full p-2 mb-2 rounded bg-gray-700">
+
+        <button id="updateTournamentBtn" class="bg-green-500 px-4 py-2 rounded w-full">Update</button>
+        <button onclick="document.getElementById('editPopup').classList.add('hidden')" class="bg-red-500 mt-2 px-4 py-2 rounded w-full">Cancel</button>
+    </div>
+</div>
+
+<script src="./js/firebase.js" type="module"></script>
+<script src="./js/admin.js" type="module"></script>
+
+</body>
+</html>
