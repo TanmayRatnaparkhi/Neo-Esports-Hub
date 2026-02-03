@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>BGMI Tournaments | Neo Esport Hub</title>
+<script src="https://cdn.tailwindcss.com"></script>
+  
+<link rel="stylesheet" href="style.css">
+
+</style>
+</head>
+
+<body>
+  <!-- NAV BAR  -->
+ <header class="bg-black shadow-md sticky top-0 z-50 w-full">
+    <div class="max-w-full mx-auto px-6 py-3 flex justify-between items-center text-2xl">
+      <a href="#" class="text-3xl font-extrabold text-cyan-400 tracking-wide hover:text-white transition animate-glow">Neo Esports Hub</a>
+      <nav class="hidden md:flex space-x-5 text-white font-semibold ">
+        <a href="index.html" class="hover:text-cyan-300 ">Home</a>
+        <a href="create-tournament.html" class="hover:text-cyan-300">Tournaments</a>
+        <a href="profile.html" class="hover:text-cyan-300">Profile</a>
+
+      </nav>
+      <div class="md:hidden">
+        <button id="mobile-btn" class="text-cyan-400 text-2xl">☰</button>
+      </div>
+    </div>
+    <div id="mobile-menu" class="hidden md:hidden px-4 pb-4 text-white bg-gray-800 ">
+      <a href="index.html" class="block py-1 hover:text-cyan-300">Home</a>
+      <a href="create-tournament.html" class="block py-1 hover:text-cyan-300">Tournaments</a>
+      <a href="profile.html" class="block py-1 hover:text-cyan-300">Profile</a>
+    </div>
+  </header>
+
+<!-- Hero Section -->
+ <div class="bg-p2">
+<section class="tournament-hero">
+<img src="img/hero-tor-BG.jpg" alt="BGMI Banner">
+<div class="hero-content">
+<div class="hero-left">
+<h1>BGMI Events</h1>
+<div class="hero-links">
+<a class="hero-link" href="join-contest.html">How To Join A Contest ?</a>
+<a class="hero-link" href="#" id="openPopup">Add BGMI Username & ID</a>
+</div>
+</div>
+<div class="hero-right">
+<button class="hero-cta1">CREATE TOURNAMENTS</button>
+<button class="hero-cta2">MY TOURNAMENTS</button>
+</div>
+</div>
+</section>
+
+<!-- Tournament Grid -->
+<section>
+<div id="tournamentGrid" class="tournament-grid" aria-live="polite"></div>
+</section>
+
+<!-- Popup -->
+<div id="popupForm">
+<div class="popup-card">
+<h3>Add BGMI Player</h3>
+<input type="text" id="username" placeholder="Enter Username">
+<input type="text" id="gameId" placeholder="Enter Game ID">
+<button id="submitPlayer">Submit</button>
+<button id="closePopup">Cancel</button>
+</div>
+</div>
+
+<!-- Room ID Popup -->
+<div id="roomPopup" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; 
+  background:rgba(0,0,0,0.8); justify-content:center; align-items:center; z-index:9999;">
+  <div style="background:#111; padding:25px; border-radius:10px; text-align:center; width:300px;">
+    <h2 style="color:#00ffff;">Room Details</h2>
+    <p><strong>Room ID:</strong> <span id="roomId"></span></p>
+    <p><strong>Password:</strong> <span id="roomPass"></span></p>
+    <button id="closeRoomPopup" style="background:#00ffff; border:none; color:#000; padding:10px 20px; border-radius:6px; cursor:pointer;">Close</button>
+  </div>
+</div>
+</div>
+</div>
+<script>
+// ----- Tournament Data -----
+let tournaments = [
+{id:'TPP-001', title:'BGMI', banner:'img/BGMI.png', platform:'MOBILE', badges:['Featured','Leaderboard','Entry Fee - Free'], modes:'• Erangel • Solo-TPP', start:'01-10-2025 10:00 AM', prize:'₹100', progress:0, total:100, buttonLabel:'Join Now', entryFee:0},
+{id:'TPP-002', title:'BGMI', banner:'img/BGMI.png', platform:'MOBILE', badges:['Featured','Leaderboard','Entry Fee - ₹20'], modes:'• Erangel • Duo-TPP', start:'01-10-2025 12:00 PM', prize:'₹500', progress:0, total:100, buttonLabel:'Join Now', entryFee:20},
+{id:'TPP-003', title:'BGMI', banner:'img/BGMI.png', platform:'MOBILE', badges:['Featured','Leaderboard','Entry Fee - ₹20'], modes:'• Erangel • Squad TPP', start:'01-10-2025 2:00 PM', prize:'₹1000', progress:0, total:100, buttonLabel:'Join Now', entryFee:20},
+];
+
+// ----- Render Cards -----
+const grid = document.getElementById('tournamentGrid');
+
+function percentOf(part,total){ return (!total||total<=0)?0:Math.round(Math.max(0,Math.min(100,(part/total)*100))*100)/100; 
+
+}
+
+
+//----- Render Tournaments -----
+   function renderTournaments(){
+      grid.innerHTML=''; 
+      tournaments.forEach(t=>{
+      const pct=percentOf(t.progress,t.total);
+      const card=document.createElement('article');
+      card.className='t-card';
+      card.innerHTML=`
+      <div class="t-banner">
+      <img src="${t.banner}" alt="${t.title} banner">
+      <div class="platform-badge">${t.platform}</div>
+      </div>
+      <div class="t-body">
+      <div class="t-title">
+      <h3>${t.title}</h3>
+      <div class="t-id badge">${t.id}</div>
+       </div>
+      <div class="time"><strong>Start:</strong> ${t.start}</div>
+      <div class="t-badges">${t.badges.map(b=>`<div class="badge">${b}</div>`).join('')}</div>
+      <div class="modes">${t.modes}</div>
+      <div class="progress-row">
+      <div class="progress-text">${t.progress} / ${t.total} Players</div>
+      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;"></div></div>
+      </div>
+      <div class="prize-join">
+      <div class="prize">${t.prize}<small>Prize Pool</small></div>
+      <button class="btn join" onclick="joinTournament('${t.id}')">${t.buttonLabel}</button>
+      </div>
+      </div>
+        `; 
+      grid.appendChild(card);
+});
+}
+
+renderTournaments();
+
+// ----- Popup Logic -----
+const popup=document.getElementById('popupForm');
+const openBtn=document.getElementById('openPopup');
+const closeBtn=document.getElementById('closePopup');
+const submitBtn=document.getElementById('submitPlayer');
+
+let playerInfo={};
+
+openBtn.addEventListener('click',()=>popup.style.display='flex');
+closeBtn.addEventListener('click',()=>popup.style.display='none');
+popup.addEventListener('click',(e)=>{if(e.target===popup) popup.style.display='none';});
+
+submitBtn.addEventListener('click',()=>{
+const username=document.getElementById('username').value.trim();
+const gameId=document.getElementById('gameId').value.trim();
+if(!username||!gameId){alert('Enter both Username & Game ID'); return;}
+playerInfo={username,gameId};
+alert('Your info has been added!');
+popup.style.display='none';
+});
+
+// Join Tournament 
+function joinTournament(id){
+const tour=tournaments.find(t=>t.id===id);
+if(!playerInfo.username||!playerInfo.gameId){ alert('Please add your Username & Game ID first!'); return; }
+if(tour.entryFee>0){ alert('This is a paid tournament. Please pay ₹'+tour.entryFee+' to join.'); return; }
+if(tour.progress>=tour.total){ alert('Tournament Full!'); return; }
+tour.progress++;
+renderTournaments();
+alert('You have joined '+tour.title+' tournament successfully!');
+}
+// Popup references
+const roomPopup = document.getElementById("roomPopup");
+const closeRoomPopup = document.getElementById("closeRoomPopup");
+const roomIdSpan = document.getElementById("roomId");
+const roomPassSpan = document.getElementById("roomPass");
+
+closeRoomPopup.addEventListener("click", () => roomPopup.style.display = "none");
+
+// Mock room details (you can later generate these dynamically)
+const roomData = {
+  "FFT-002": { id: "FFROOM123", pass: "fire10" },
+  "FFT-003": { id: "FFROOM789", pass: "pro20" },
+  "VALO-202": { id: "VALO456", pass: "valor25" },
+  "VALO-303": { id: "VALO999", pass: "valor30" }
+};
+
+// 🔥 Modify joinTournament()
+async function joinTournament(id) {
+  const tour = tournaments.find(t => t.id === id);
+  if (!playerInfo.username || !playerInfo.gameId) {
+    alert("Please add your Username & Game ID first!");
+    return;
+  }
+
+  // For paid tournaments — payment first
+  if (tour.entryFee > 0) {
+    const confirmed = confirm(`This is a paid tournament. Pay ₹${tour.entryFee} to join?`);
+    if (!confirmed) return;
+
+    // 💸 After payment success (you’ll replace this alert with Razorpay)
+    alert("✅ Payment successful!");
+
+    // 🎮 Show Room Details
+    const details = roomData[id] || { id: "COMING_SOON", pass: "WAIT" };
+    roomIdSpan.textContent = details.id;
+    roomPassSpan.textContent = details.pass;
+    roomPopup.style.display = "flex";
+
+    // 🧾 Save to “My Tournaments”
+    saveMyTournament(tour);
+  } else {
+    // Free tournaments
+    tour.progress++;
+    renderTournaments();
+    alert(`You joined ${tour.title} tournament successfully!`);
+
+    const details = roomData[id] || { id: "FREE123", pass: "WIN" };
+    roomIdSpan.textContent = details.id;
+    roomPassSpan.textContent = details.pass;
+    roomPopup.style.display = "flex";
+    saveMyTournament(tour);
+  }
+}
+
+// 🔐 Save My Tournament to Firebase
+async function saveMyTournament(tour) {
+  try {
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (!user) return;
+
+    // If using Firebase:
+    // import { getFirestore, doc, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+    const db = getFirestore(app);
+    await addDoc(collection(db, "players", user.uid, "myTournaments"), {
+      id: tour.id,
+      title: tour.title,
+      prize: tour.prize,
+      joinedOn: new Date().toLocaleString(),
+    });
+
+    console.log("My tournament saved!");
+  } catch (err) {
+    console.error("Error saving my tournament:", err);
+  }
+}
+
+</script>
+<script>
+  function toggleMenu() {
+    document.getElementById("navLinks").classList.toggle("active");
+
+  }
+
+  
+    // mobile menu
+    const mobileBtn = document.getElementById('mobile-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    mobileBtn.addEventListener('click', ()=> mobileMenu.classList.toggle('hidden'));
+</script>
+
+</body>
+</html>

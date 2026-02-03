@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Esports Dashboard</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<style>
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #0f0f0f;
+    color: #fff;
+  }
+
+  .dashboard {
+    display: flex;
+    min-height: 100vh;
+    flex-wrap: wrap;
+  }
+
+  /* Sidebar */
+  .sidebar {
+    width: 220px;
+    background: #1a1a1a;
+    padding: 20px;
+    flex-shrink: 0;
+  }
+
+  .sidebar h2 {
+    margin-bottom: 20px;
+    color: #00ffff;
+  }
+
+  .sidebar ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  .sidebar li {
+    padding: 12px 10px;
+    cursor: pointer;
+    border-left: 4px solid transparent;
+  }
+
+  .sidebar li:hover, .sidebar li.active {
+    background: #292929;
+    border-left: 4px solid #00ffff;
+  }
+
+  /* Main Content */
+  .main-content {
+    flex: 1;
+    padding: 30px;
+    min-width: 0;
+  }
+
+  .box {
+    display: inline-block;
+    height: 40px;
+    width: 18%;
+    background: #2c2c2c;
+    padding: 15px;
+    margin: 10px 1%;
+    border-radius: 6px;
+    text-align: center;
+  }
+
+  .section { display: none; }
+  .section.active { display: block; }
+
+  .avatar {
+    width: 140px;
+    height: 135px;
+    border-radius: 50%;
+    border: 2px solid #ffffff;
+    margin-bottom: 15px;
+    object-fit: cover;
+  }
+
+  input, select, textarea {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0 20px;
+    background: #2c2c2c;
+    border: none;
+    color: #fff;
+    border-radius: 6px;
+  }
+
+  h3 {
+    color: #00ffff;
+    font-weight: bold;
+    font-family: Roboto, sans-serif;
+    font-size: 25px;
+  }
+
+  h4 {
+    color: rgb(255, 255, 255);
+    font-family: sans-serif;
+    font-size: 18px;
+    margin-top: 30px;
+    font-weight: bold;
+  }
+
+  .btn {
+    padding: 10px 20px;
+    background: #00ffff;
+    border: none;
+    color: #000;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 10px;
+    margin-top: 10px;
+  }
+
+  .btn:hover { background: #00cccc; }
+
+  table, th, td, tr {
+    padding: 12px 10px;
+    border: 1px solid #333;
+    text-align: left;
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 14px;
+  }
+
+  .btn1 {
+    padding: 5px 10px;
+    background: #03fcfc;
+    font-weight: bolder;
+    font-size: x-large;
+    border: none;
+    color: #000;
+    height: 40px;
+    width: 55px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-bottom: 20px;
+  }
+
+  /* Responsive */
+  @media (max-width: 1024px) {
+    .box { width: 30%; margin: 10px 1%; }
+  }
+
+  @media (max-width: 768px) {
+    .dashboard { flex-direction: column; }
+    .sidebar {
+      width: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-around;
+    }
+    .sidebar ul { width: 100%; display: flex; flex-wrap: wrap; justify-content: center; padding: 0; }
+    .sidebar li { width: 45%; margin: 5px 2.5%; text-align: center; border-left: none; border-radius: 6px; }
+    .sidebar li:hover, .sidebar li.active { border-left: none; background: #292929; }
+    .main-content { padding: 15px; }
+    .box { width: 45%; margin: 5px 2.5%; }
+    input, select, textarea { width: 100%; }
+  }
+
+  @media (max-width: 480px) {
+    .box { width: 100%; margin: 5px 0; }
+    .sidebar li { width: 100%; margin: 5px 0; }
+    .main-content { padding: 10px; }
+  }
+</style>
+</head>
+<body>
+<div class="dashboard">
+  <!-- Sidebar -->
+  <nav class="sidebar">
+     <a href="create-tournament.html" class="btn1" title="Back"><i class="fa-solid fa-arrow-left" style="color: #060002;"></i></a>
+    <h2>Dashboard</h2>
+    <ul>
+      <li data-section="profile">My Profile</li>
+      <li data-section="wallet">Wallet</li>
+      <li data-section="history">Transaction History</li>
+      <li data-section="redeem">Redeem Code</li>
+      <li data-section="refer">Refer Code</li>
+    </ul>
+    <button class="btn" id="logoutBtn" type="button" style="font-size:15px; font-family:sans-serif;"><b>Log out</b></button>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Profile -->
+    <div class="section" id="profile">
+      <h3>My Profile</h3>
+      <img src="empty-img.png" alt="Profile" class="avatar">
+      <input type="file" accept="image/*" id="avatarFile">
+      <label>Name:</label>
+      <input type="text" id="name" placeholder="Your name">
+      <label>Gamer Handle:</label>
+      <input type="text" id="gamerHandle" placeholder="e.g. ShadowSniper">
+      <label>Bio:</label>
+      <textarea id="bio" placeholder="Main roles, play style..."></textarea>
+      <label>Location:</label>
+      <input type="text" id="location" placeholder="City, Country">
+      <label>Social Links:</label>
+      <input type="text" id="social" placeholder="twitter.com/...">
+      <div class="form-actions">
+        <button class="btn" id="saveProfileBtn">Save</button>
+        <a href="forgot.html"><button class="btn">Change Password</button></a>
+      </div>
+    </div>
+
+    <!-- Wallet -->
+    <div class="section" id="wallet">
+      <h3>Wallet</h3>
+      <div class="wallet">
+        <div class="box" id="available"><strong>Available:</strong> ₹0</div>
+        <div class="box" id="deposit"><strong>Deposit:</strong> ₹0</div>
+        <div class="box" id="pending"><strong>Pending:</strong> ₹0</div>
+        <div class="box" id="withdrawal"><strong>Withdrawal:</strong> ₹0</div>
+        <div class="box" id="total"><strong>Total:</strong> ₹0</div>
+      </div>
+      <h4>Deposit :</h4>
+      <input type="number" id="depositInput" placeholder="Amount (Min ₹20 Deposit)">
+      <button class="btn" id="depositBtn">Deposit</button>
+      <h4>Withdraw Funds :</h4>
+      <input type="number" id="withdrawInput" placeholder="Amount (Min ₹50 Withdraw)">
+      <h4>UPI Details :</h4>
+      <input type="text" id="upi" placeholder="Enter UPI ID">
+      <button class="btn" id="withdrawRequestBtn">Request Withdraw</button>
+    </div>
+
+    <!-- Transaction History -->
+    <div class="section" id="history">
+      <h3>Transaction History</h3>
+      <input type="text" id="searchHistory" placeholder="Search...">
+      <select id="filterHistory">
+        <option>All</option>
+        <option>Deposit</option>
+        <option>Withdraw</option>
+      </select>
+      <table>
+        <thead>
+          <tr><th>Date</th><th>Type</th><th>Details</th><th>Amount</th><th>Status</th></tr>
+        </thead>
+        <tbody id="historyBody">
+          <tr><td colspan="5" style="text-align:center;">No Transactions Yet</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Redeem -->
+    <div class="section" id="redeem">
+      <h3>Redeem Code</h3>
+      <input type="text" id="redeemInput" placeholder="Enter your code">
+      <button class="btn" id="applyCode">Apply</button>
+    </div>
+
+    <!-- Refer -->
+    <div class="section" id="refer">
+      <h3>Refer a Friend</h3>
+      <input type="text" id="refCode" value="ABC123XYZ" readonly>
+      <button class="btn" id="copyRef">Copy</button>
+      <p>Share your code and earn rewards!</p>
+    </div>
+  </div>
+</div>
+
+<!-- Razorpay Checkout (non-module) -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<!-- Firebase + App Logic (module) -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+  import {
+    getFirestore, doc, getDoc, setDoc, updateDoc, addDoc, collection, serverTimestamp, getDocs
+  } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+
+  // ---- Firebase Config (from your code) ----
+  const firebaseConfig = {
+    apiKey: "AIzaSyB8Xl3RQMHUhsiJS4Kk2y64Rsnwoh3jVkI",
+    authDomain: "neo-esports-hub.firebaseapp.com",
+    projectId: "neo-esports-hub",
+    storageBucket: "neo-esports-hub.firebasestorage.app",
+    messagingSenderId: "1033553084106",
+    appId: "1:1033553084106:web:33a391d3e7eb1faaae7e33",
+    measurementId: "G-5952VXT79F"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  // Globals
+  let currentUser = null;
+  const defaultWallet = () => ({ available: 0, deposit: 0, withdrawal: 0, pending: 0, total: 0 });
+
+  // ----- UI helpers (used by both localStorage and Firestore flows) -----
+  function safeNum(v){ return Number(v) || 0; }
+
+  function formatCurrency(n){ return '₹' + safeNum(n); }
+
+  function setActiveSidebar(sectionId){
+    document.querySelectorAll('.sidebar li').forEach(li => {
+      if (li.dataset.section === sectionId) li.classList.add('active');
+      else li.classList.remove('active');
+    });
+  }
+
+  function showSection(id){
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    const el = document.getElementById(id);
+    if (el) el.classList.add('active');
+    setActiveSidebar(id);
+  }
+
+  // Update wallet display (DOM) and optionally persist to localStorage
+  function updateWalletDisplay(wallet, persistLocal=true){
+    const fields = ['available','deposit','pending','withdrawal','total'];
+    fields.forEach(k=>{
+      const el = document.getElementById(k);
+      if(el) el.innerHTML = `<strong>${k.charAt(0).toUpperCase()+k.slice(1)}:</strong> ${formatCurrency(wallet[k] || 0)}`;
+    });
+    if (persistLocal) localStorage.setItem('wallet', JSON.stringify(wallet));
+    window.currentWallet = wallet;
+  }
+
+  // Transactions: add to localStorage and DOM
+  function addTransactionLocal(tr){
+    let tx = JSON.parse(localStorage.getItem('transactions')) || [];
+    tx.push(tr);
+    localStorage.setItem('transactions', JSON.stringify(tx));
+    addTransactionRow(tr);
+  }
+
+  function addTransactionRow(t){
+    const tbody = document.getElementById('historyBody');
+    const noTxRow = tbody.children[0] && tbody.children[0].children.length === 1 && tbody.children[0].textContent.includes('No Transactions Yet');
+    if (noTxRow) tbody.innerHTML = '';
+    const row = document.createElement('tr');
+    row.innerHTML = `<td>${t.date || new Date().toLocaleString()}</td>
+                     <td>${t.type}</td>
+                     <td>${t.details}</td>
+                     <td>${formatCurrency(t.amount)}</td>
+                     <td>${t.status}</td>`;
+    tbody.appendChild(row);
+  }
+
+  // Load transactions from localStorage into DOM
+  function loadLocalTransactions(){
+    const tx = JSON.parse(localStorage.getItem('transactions')) || [];
+    const tbody = document.getElementById('historyBody');
+    if (tx.length === 0) {
+      tbody.innerHTML = "<tr><td colspan='5' style='text-align:center;'>No Transactions Yet</td></tr>";
+      return;
+    }
+    tbody.innerHTML = '';
+    tx.forEach(t => addTransactionRow(t));
+  }
+
+  // ----- DOMContentLoaded initial UI wiring (local cached state available before auth) -----
+  document.addEventListener('DOMContentLoaded', () => {
+    // Sidebar clicks
+    document.querySelectorAll('.sidebar li').forEach(li=>{
+      li.addEventListener('click', ()=> showSection(li.dataset.section));
+    });
+
+    // Avatar file
+    document.getElementById('avatarFile').addEventListener('change', changeImage);
+
+    // Save profile (local fallback; Firestore save attached after auth)
+    document.getElementById('saveProfileBtn').addEventListener('click', ()=>{
+      ['name','gamerHandle','bio','location','social'].forEach(id=>{
+        localStorage.setItem(id, document.getElementById(id).value || '');
+      });
+      // avatar is already saved by changeImage
+      alert('Profile Saved (local)!');
+    });
+
+    // Copy referral
+    document.getElementById('copyRef').addEventListener('click', ()=>{
+      const input = document.getElementById('refCode');
+      try {
+        navigator.clipboard.writeText(input.value);
+        alert('Referral Code Copied!');
+      } catch (e) {
+        input.select();
+        document.execCommand('copy');
+        alert('Referral Code Copied!');
+      }
+    });
+
+    // Load local profile
+    const avatar = localStorage.getItem('avatar');
+    if (avatar) document.querySelector('.avatar').src = avatar;
+    ['name','gamerHandle','bio','location','social'].forEach(id=>{
+      const el = document.getElementById(id);
+      if (el) el.value = localStorage.getItem(id) || '';
+    });
+
+    // Load local wallet
+    const wallet = JSON.parse(localStorage.getItem('wallet')) || defaultWallet();
+    updateWalletDisplay(wallet, false);
+
+    // Load local transactions to UI
+    loadLocalTransactions();
+
+    // Show default section
+    showSection('profile');
+  });
+
+  // Safe image-change / persistence
+  function changeImage(event){
+    const file = event.target?.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      document.querySelector('.avatar').src = reader.result;
+      localStorage.setItem('avatar', reader.result);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // ----- Auth state & Firestore sync ----- //
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+      // Not logged in - still allow local usage, but redirect to login if needed
+      console.warn('User not logged in. Local-only mode.');
+      // If you want to force login: uncomment next line
+      // window.location.href = "login.html";
+      return;
+    }
+    currentUser = user;
+    console.log('Logged in as', user.email);
+
+    // Ensure user doc exists
+    const playerRef = doc(db, 'players', currentUser.uid);
+    try {
+      const snap = await getDoc(playerRef);
+      if (!snap.exists()) {
+        await setDoc(playerRef, { email: currentUser.email, profile: {}, wallet: defaultWallet() });
+      }
+    } catch (err) {
+      console.error('Error ensuring user doc:', err);
+    }
+
+    // Load profile from Firestore (if present) and override local fields
+    try {
+      const snap = await getDoc(playerRef);
+      const data = snap.exists() ? snap.data() : null;
+      if (data?.profile) {
+        const p = data.profile;
+        if (p.name) document.getElementById('name').value = p.name;
+        if (p.gamerHandle) document.getElementById('gamerHandle').value = p.gamerHandle;
+        if (p.bio) document.getElementById('bio').value = p.bio;
+        if (p.location) document.getElementById('location').value = p.location;
+        if (p.social) document.getElementById('social').value = p.social;
+        if (p.avatar) {
+          document.querySelector('.avatar').src = p.avatar;
+          localStorage.setItem('avatar', p.avatar);
+        }
+      }
+      // Load wallet from Firestore
+      const wallet = (data && data.wallet) ? data.wallet : (JSON.parse(localStorage.getItem('wallet')) || defaultWallet());
+      updateWalletDisplay(wallet);
+    } catch (err) {
+      console.error('Error loading profile/wallet:', err);
+    }
+
+    // Load transactions from Firestore collection players/{uid}/transactions - merge with local
+    try {
+      const txRef = collection(db, 'players', currentUser.uid, 'transactions');
+      const snap = await getDocs(txRef);
+      if (!snap.empty) {
+        // overwrite transactions in UI with firestore data
+        localStorage.setItem('transactions', JSON.stringify([])); // clear local
+        const txs = [];
+        snap.forEach(docSnap => {
+          const t = docSnap.data();
+          txs.push(t);
+          addTransactionRow(t);
+        });
+        localStorage.setItem('transactions', JSON.stringify(txs));
+      } else {
+        // keep local transactions if any
+        loadLocalTransactions();
+      }
+    } catch (err) {
+      console.error('Error loading transactions:', err);
+      // fallback to local transactions
+      loadLocalTransactions();
+    }
+
+    // Attach Firestore-backed profile save
+    document.getElementById('saveProfileBtn').addEventListener('click', async () => {
+      try {
+        const profile = {
+          name: document.getElementById('name').value,
+          gamerHandle: document.getElementById('gamerHandle').value,
+          bio: document.getElementById('bio').value,
+          location: document.getElementById('location').value,
+          social: document.getElementById('social').value,
+          avatar: document.querySelector('.avatar').src
+        };
+        await updateDoc(playerRef, { profile });
+        // Also save locally
+        ['name','gamerHandle','bio','location','social'].forEach(id=>{
+          localStorage.setItem(id, document.getElementById(id).value || '');
+        });
+        localStorage.setItem('avatar', profile.avatar || '');
+        alert('✅ Profile saved to server!');
+      } catch (err) {
+        console.error('Error saving profile:', err);
+        alert('❌ Error saving profile to server (saved locally).');
+      }
+    });
+
+    // Attach sign out
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      try {
+        await signOut(auth);
+        alert('Logged out');
+        window.location.href = 'login.html';
+      } catch (err) {
+        console.error('Sign out error', err);
+        alert('Error logging out');
+      }
+    });
+
+  }); // end onAuthStateChanged
+
+  // ----- Deposit (Razorpay) ----- //
+  document.getElementById('depositBtn').addEventListener('click', async () => {
+    const amount = Number(document.getElementById('depositInput').value);
+    if (!amount || amount < 20) {
+      alert('⚠ Minimum deposit is ₹20');
+      return;
+    }
+
+    // Razorpay options
+    const options = {
+      key: "rzp_test_RbL892zlDi0yXK", // test key from your code
+      amount: amount * 100, // paisa
+      currency: "INR",
+      name: "Neo Esports Hub",
+      description: "Tournament Wallet Deposit",
+      handler: async function (response) {
+        // On success: update Firestore wallet & transactions (if logged in), and localStorage
+        const tx = {
+          date: new Date().toLocaleString(),
+          type: 'Deposit',
+          details: `Payment Successful (Razorpay ID: ${response.razorpay_payment_id})`,
+          amount,
+          status: 'Success',
+          timestamp: serverTimestamp ? serverTimestamp() : new Date().toISOString()
+        };
+
+        // Update local wallet first
+        const localWallet = JSON.parse(localStorage.getItem('wallet')) || defaultWallet();
+        localWallet.deposit = safeNum(localWallet.deposit) + amount;
+        localWallet.available = safeNum(localWallet.available) + amount;
+        localWallet.total = safeNum(localWallet.deposit) - safeNum(localWallet.withdrawal);
+        updateWalletDisplay(localWallet);
+
+        // Add transaction locally
+        addTransactionLocal(tx);
+
+        // If user logged in, update Firestore
+        if (currentUser) {
+          try {
+            const playerRef = doc(db, 'players', currentUser.uid);
+
+            // update wallet in Firestore (merge)
+            await updateDoc(playerRef, {
+              wallet: {
+                deposit: (window.currentWallet?.deposit || 0) + amount,
+                available: (window.currentWallet?.available || 0) + amount,
+                withdrawal: (window.currentWallet?.withdrawal || 0) || 0,
+                pending: (window.currentWallet?.pending || 0) || 0,
+                total: ((window.currentWallet?.deposit || 0) + amount) - ((window.currentWallet?.withdrawal || 0) || 0)
+              }
+            });
+
+            // add transaction doc
+            const txRef = collection(db, 'players', currentUser.uid, 'transactions');
+            await addDoc(txRef, {
+              date: new Date().toLocaleString(),
+              type: tx.type,
+              details: tx.details,
+              amount: tx.amount,
+              status: tx.status,
+              createdAt: serverTimestamp()
+            });
+
+            alert("✅ Payment successful and synced to server! ₹" + amount + " added to your wallet.");
+          } catch (err) {
+            console.error('Error updating Firestore after deposit:', err);
+            alert('✅ Payment succeeded but failed to sync with server. Wallet saved locally.');
+          }
+        } else {
+          alert("✅ Payment successful! Saved locally (login to sync with server). ₹" + amount + " added to your wallet.");
+        }
+
+        // Clear deposit input
+        document.getElementById('depositInput').value = '';
+      },
+      modal: {
+        ondismiss: function () {
+          alert("❌ Payment cancelled. No amount added.");
+        }
+      },
+      prefill: {
+        name: document.getElementById('name').value || undefined
+      },
+      theme: { color: "#00ffff" }
+    };
+
+    try {
+      const rzp = new Razorpay(options);
+      rzp.open();
+    } catch (err) {
+      console.error('Razorpay open error:', err);
+      alert('Payment could not be initiated.');
+    }
+  });
+
+  // ----- Withdraw request (stores request in Firestore) ----- //
+  document.getElementById('withdrawRequestBtn').addEventListener('click', async () => {
+    const upiId = document.getElementById('upi').value.trim();
+    const name = document.getElementById('name').value.trim();
+    const amount = Number(document.getElementById('withdrawInput').value);
+
+    if (!upiId || !name) return alert("⚠ Please fill in your Name and UPI ID!");
+    if (!amount || amount < 50) return alert("⚠ Minimum withdrawal is ₹50!");
+
+    // If logged in, create withdrawal request in Firestore
+    if (!currentUser) {
+      alert('⚠ You must be logged in to request withdrawal.');
+      return;
+    }
+
+    try {
+      // Save UPI info in USERS_UPI_ID collection (as in second file)
+      await setDoc(doc(db, 'USERS_UPI_ID', currentUser.uid), { Name: name, upid: [upiId] }, { merge: true });
+
+      // Add withdrawal request to a collection
+      await addDoc(collection(db, 'withdrawalRequests'), {
+        userId: currentUser.uid,
+        name,
+        upiId,
+        amount,
+        status: "Pending",
+        timestamp: serverTimestamp()
+      });
+
+      // Optionally decrement available / mark pending in wallet
+      try {
+        const playerRef = doc(db, 'players', currentUser.uid);
+        // Fetch current wallet (best-effort)
+        const snap = await getDoc(playerRef);
+        let wallet = snap.exists() && snap.data().wallet ? snap.data().wallet : defaultWallet();
+        wallet.pending = (wallet.pending || 0) + amount;
+        wallet.available = Math.max(0, (wallet.available || 0) - amount);
+        wallet.total = (wallet.deposit || 0) - (wallet.withdrawal || 0);
+        await updateDoc(playerRef, { wallet });
+        // update local UI and storage
+        updateWalletDisplay(wallet);
+      } catch (err) {
+        console.warn('Could not update wallet pending/available on server:', err);
+      }
+
+      // Add transaction locally for history
+      addTransactionLocal({
+        date: new Date().toLocaleString(),
+        type: 'Withdraw Request',
+        details: `UPI: ${upiId}`,
+        amount,
+        status: 'Pending'
+      });
+
+      alert('✅ Withdrawal request submitted successfully!');
+      document.getElementById('withdrawInput').value = '';
+    } catch (error) {
+      console.error(error);
+      alert('❌ No Balance Avalable !');
+    }
+  });
+
+  // ----- Load transactions filter/search (simple client-side) ----- //
+  document.getElementById('filterHistory').addEventListener('change', () => {
+    const all = JSON.parse(localStorage.getItem('transactions')) || [];
+    const filter = document.getElementById('filterHistory').value;
+    const tbody = document.getElementById('historyBody');
+    const filtered = all.filter(t => filter === 'All' ? true : (t.type && t.type.toLowerCase().includes(filter.toLowerCase())));
+    tbody.innerHTML = '';
+    if (filtered.length === 0) {
+      tbody.innerHTML = "<tr><td colspan='5' style='text-align:center;'>No Transactions Yet</td></tr>";
+    } else filtered.forEach(addTransactionRow);
+  });
+
+  document.getElementById('searchHistory').addEventListener('input', (e) => {
+    const q = e.target.value.toLowerCase();
+    const all = JSON.parse(localStorage.getItem('transactions')) || [];
+    const filtered = all.filter(t => JSON.stringify(t).toLowerCase().includes(q));
+    const tbody = document.getElementById('historyBody');
+    tbody.innerHTML = '';
+    if (filtered.length === 0) {
+      tbody.innerHTML = "<tr><td colspan='5' style='text-align:center;'>No Transactions Yet</td></tr>";
+    } else filtered.forEach(addTransactionRow);
+  });
+
+  // ----- Redeem button (simple local behavior) ----- //
+  document.getElementById('applyCode').addEventListener('click', () => {
+    const code = document.getElementById('redeemInput').value.trim();
+    if (!code) return alert('Enter a code.');
+    // Example: simple test code logic, adapt to your server logic if needed
+    if (code === 'FREE50') {
+      const amt = 50;
+      const tx = {
+        date: new Date().toLocaleString(),
+        type: 'Promo',
+        details: `Redeem code ${code}`,
+        amount: amt,
+        status: 'Success'
+      };
+      const localWallet = JSON.parse(localStorage.getItem('wallet')) || defaultWallet();
+      localWallet.deposit = safeNum(localWallet.deposit) + amt;
+      localWallet.available = safeNum(localWallet.available) + amt;
+      localStorage.setItem('wallet', JSON.stringify(localWallet));
+      updateWalletDisplay(localWallet);
+      addTransactionLocal(tx);
+      alert('Promo applied: ₹' + amt);
+    } else {
+      alert('Invalid or expired code.');
+    }
+    document.getElementById('redeemInput').value = '';
+  });
+
+  // Keep page scripts from erroring if some modules are missing
+  window.addEventListener('error', (e) => {
+    // console.warn('Window error:', e.message);
+  });
+</script>
+
+</body>
+</html>

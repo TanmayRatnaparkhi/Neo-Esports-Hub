@@ -1,0 +1,11 @@
+{
+  "hosting": {
+    "site": "neo-esports-hub", 
+    "public": "public",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ]
+  }
+}

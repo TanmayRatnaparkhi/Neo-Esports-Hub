@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Neo Esports Hub - Online Gaming Tournaments</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron&family=Rajdhani&display=swap" rel="stylesheet"/>
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet"/>
+  <script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore-compat.js"></script>
+
+  <style>
+    body { font-family: 'Rajdhani', sans-serif; scroll-behavior: smooth; background:#000; color:#fff; }
+    :root{
+      --accent: #00ff99;
+      --muted: #ffffff;
+      --card: #111318;
+    }
+
+    @keyframes neonGlow { 0%,100%{ box-shadow:0 0 10px rgba(0,240,255,0.6);}
+       50%{box-shadow:0 0 30px rgba(0,255,148,0.8);} }
+    .hover-glow:hover {
+       animation: neonGlow 1.2s infinite;
+       transform: translateY(-2px); }
+    .card-hover:hover { 
+      transform: translateY(-6px) scale(1.02);
+       transition: transform .25s ease-in-out; }
+
+    .modal-bg {
+       background-color: rgba(0,0,0,0.82); 
+       display:flex;
+        align-items:center; 
+        justify-content:center; }
+    .modal-card { width: 98%;  
+      max-width: 420px;
+       background: #0e1113;
+        border-radius: 12px;
+         padding:18px;
+          box-shadow: 0 8px 40px rgba(0,0,0,0.7); 
+          border:1px solid rgba(255,255,255,0.03); }
+
+ 
+    .field { margin-bottom:12px; }
+    .field label { display:block; 
+      color:var(--muted);
+       margin-bottom:6px;
+        font-size:15px; }
+    .field input { width:100%;
+       padding:10px 12px;
+       border-radius:10px;
+       border:1px solid rgba(255,255,255,0.04); 
+       background:var(--card); 
+       color:#fff; 
+       font-size:14px; }
+    .eye-btn { position:absolute; 
+      right:12px;
+       top:38px;
+        background:none; 
+        border:none; 
+        color:var(--accent);
+         cursor:pointer; }
+
+    .btn { width:100%; 
+      display:block;
+       padding:10px; 
+       border-radius:10px;
+        border:none;
+         cursor:pointer;
+          font-weight:700; 
+          background:linear-gradient(90deg,var(--accent),#8816e5);
+           color:#001; }
+    .btn.alt { background:transparent; 
+       color:var(--accent);
+       border:1px solid rgba(255,255,255,0.04); }
+
+    .links { 
+      text-align:center;
+       margin-top:10px; }
+    .links a { color:var(--accent);
+     text-decoration:none; 
+     font-size:13px; }
+
+    table { border-collapse:collapse;
+       width:100%; }
+    th, td { padding:10px; }
+    thead th { background:#0b0d0f;
+       color:#7dd3fc; 
+       font-weight:700; }
+    tbody tr:hover { background: rgba(255,255,255,0.03); }
+
+    .small { font-size:13px;
+       color:#bfcbd3; }
+
+    .hero-wrap { position:relative; overflow:visible; }
+  .hero-frame {
+  position: absolute;
+  bottom: -3px;       
+  left: 50%;
+  transform: translateX(-50%);
+  width: 250%;       
+  height: 12px;       
+  border-radius: 3px;
+  background: linear-gradient(
+    90deg,
+    #ff004c,
+    #ff8a00,
+    #fff600,
+    #00d4ff,
+    #ff004c
+  );
+  background-size: 400%;
+  animation: rgbLine 4s linear infinite;
+  filter: brightness(1.3) saturate(1.3);
+  z-index: 2;
+}
+
+@keyframes rgbLine {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 400% 50%; }
+}
+    .hero-frame::after{
+      content:"";
+      position:absolute;
+      inset:6px;
+      border-radius:14px;
+      background: transparent;
+      pointer-events:none;
+    }
+    .hero-inner {
+      position:absolute;
+      border-radius: 20px;
+      padding:40px 20px;
+    }
+
+    @keyframes floaty { 0% { transform: translateY(0);} 
+    50% { transform: translateY(-6px);} 
+    100% { transform: translateY(0);} }
+    .floating { animation: floaty 4s ease-in-out infinite; }
+
+    #siteLoader { position:fixed;
+       inset:0;
+       display:flex; 
+       align-items:center; 
+       justify-content:center; 
+       background:#000;
+        z-index:60; }
+    .loader-ring { width:80px;
+       height:80px; 
+       border-radius:50%; 
+       border:6px solid rgba(255,255,255,0.05); 
+       border-top-color:var(--accent); 
+       animation: loader-spin 1s linear infinite; }
+    @keyframes loader-spin { to { transform: rotate(360deg); } }
+    #musicToggle{ 
+       position: fixed;
+       bottom: 20px;
+       right: 20px;
+       background-color: #000000;
+       color: rgb(3, 112, 255);
+       padding: 7px 12px;
+      border-radius: 20px;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;}
+ 
+ 
+
+    .music-btn { position:fixed;
+       right:20px; 
+       bottom:24px; 
+       z-index:70; 
+       background:linear-gradient(90deg,#111,#222); 
+       padding:12px; 
+       border-radius:12px; 
+       border:1px solid rgba(255,255,255,0.04); 
+       cursor:pointer; 
+       display:flex; 
+       gap:8px; 
+       align-items:center; }
+
+    @media (max-width:640px){
+      .hero-frame { inset:-8px; }
+      .hero-inner { padding:24px 16px; }
+    }
+  </style>
+</head>
+<body class="bg-black text-white">
+
+  <div id="siteLoader">
+    <div style="text-align:center;">
+      <div class="loader-ring"></div>
+      <div class="small mt-3">Neo Esports Hub — loading...</div>
+    </div>
+  </div>
+  <header class="bg-black shadow-md sticky top-0 z-50">
+    <div class="max-w-8xl mx- px-3 py-3 flex justify-between items-center text-2xl ">
+      <a href="#" class="text-3xl font-extrabold text-cyan-400 tracking-wide hover:text-white transition animate-glow">Neo Esports Hub</a>
+      <nav class="hidden md:flex space-x-5 text-white font-semibold">
+        <a href="#hero" class="hover:text-cyan-300 ">Home</a>
+        <a href="#about" class="hover:text-cyan-300">About</a>
+        <a href="#contact" class="hover:text-cyan-300">Contact</a>
+         <a href="Terms-Conditions.html" class="hover:text-cyan-300">Terms & Conditions</a>
+      </nav>
+      <div class="md:hidden">
+        <button id="mobile-btn" class="text-cyan-400 text-2xl">☰</button>
+      </div>
+    </div>
+    <div id="mobile-menu" class="hidden md:hidden px-4 pb-4 text-white bg-gray-800">
+      <a href="#hero" class="block py-1 hover:text-cyan-300">Home</a>
+      <a href="#about" class="block py-1 hover:text-cyan-300">About</a>
+      <a href="#contact" class="block py-1 hover:text-cyan-300">Contact</a>
+       <a href="Terms-Conditions.html" class="hover:text-cyan-300">Terms & Conditions</a>
+    </div>
+  </header>
+  <!-- hero section -->
+  <div class="hero-wrap relative">
+    <section id="hero" class="relative h-screen flex items-center justify-center text-center bg-black overflow-hidden">
+    
+      <div class="hero-frame rounded-2xl"></div>
+
+      <div class="hero-inner relative z-10 max-w-3xl mx-auto" data-aos="fade-up">
+        <h1 class="heading-hero text-6xl md:text-7xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-blue-500 to-yellow-500 mb-4 floating">
+          Neo Esports Hub
+        </h1>
+        <p class="text-lg text-white-300 mb-8 font-semibold small">An Online Gaming Tournament Platform Built for Champions.</p>
+        <button onclick="openLogin()" class="bg-gradient-to-r from-green-400 to-green-800 text-white px-8 py-3 rounded-lg font-bold shadow-lg hover:scale-105 transform hover-glow">
+          Join Now
+        </button>
+      </div>
+
+      <div class="absolute inset-0 z-0">
+        <img src="img/bg-hero.jpeg" alt="Hero Background" class="w-full h-full object-cover opacity-100"/>
+      </div>
+      <div class="absolute inset-0 z-0 bg-gradient-to-br from-cyan-400 via-green-400 to-blue-600 opacity-30 blur-2xl"></div>
+      <div class="absolute inset-0 bg-black bg-opacity-45 z-0"></div>
+    </section>
+  </div>
+
+  <!-- Features -->
+  <section class="max-w-6xl mx-auto px-4 py-16" data-aos="fade-up" id="features">
+    <div class="grid md:grid-cols-4 gap-10 text-center">
+      <div>
+        <div class="bg-gray-900 p-4 rounded-lg border border-cyan-400 shadow-md hover-glow">
+          <img src="https://i.pinimg.com/1200x/0c/9b/89/0c9b89b62ba04b4b4740f4ce2da28b54.jpg" class="w-16 h-16 mx-auto mb-3 rounded-full"/>
+          <h3 class="text-white-400 font-semibold">Easy Registration</h3>
+        </div>
+      </div>
+      <div>
+        <div class="bg-gray-900 p-4 rounded-lg border border-green-400 shadow-md hover-glow">
+          <img src="img/tournament-img.png" class="w-16 h-16 mx-auto mb-3 rounded-full"/>
+          <h3 class="text-white-400 font-semibold">Tournaments</h3>
+        </div>
+      </div>
+      <div>
+        <div class="bg-gray-900 p-4 rounded-lg border border-cyan-400 shadow-md hover-glow">
+          <img src="img/score.png" class="w-16 h-16 mx-auto mb-3 rounded-full"/>
+          <h3 class="text-white-400 font-semibold">Live Scoreboard</h3>
+        </div>
+      </div>
+      <div>
+        <div class="bg-gray-900 p-4 rounded-lg border border-green-400 shadow-md hover-glow">
+          <img src="img/leaderbord.png" class="w-16 h-16 mx-auto mb-3 rounded-full"/>
+          <h3 class="text-white-400 font-semibold">Leaderboard</h3>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TOURNAMENTS  -->
+  <section id="tournaments" class="max-w-6xl mx-auto px-4 pb-20" data-aos="fade-up">
+    <h2 class="text-4xl font-bold text-white-300 mb-10 text-center"> ⚔Live Tournaments</h2>
+    <div class="grid md:grid-cols-3 gap-8">
+      <div class="bg-gray-800 p-6 rounded-lg shadow-md border border-cyan-500 card-hover tournament-card" data-game="Valorant">
+        <img src="https://i.pinimg.com/1200x/cf/ae/88/cfae886e263126f685510e2f45b82970.jpg" class="w-full h-40 object-cover mb-4 rounded" />
+        <h3 class="text-xl font-bold mb-1">Valorant Showdown</h3>
+        <p class="text-sm text-gray-400">Play Now | Register Now</p>
+        <button onclick="openLogin()"  class="join-btn mt-4 bg-cyan-500 px-4 py-2 rounded hover-glow">Join</button>
+      </div>
+
+      <div class="bg-gray-800 p-6 rounded-lg shadow-md border border-green-500 card-hover tournament-card" data-game="BGMI">
+        <img src="https://i.pinimg.com/1200x/59/0c/a7/590ca77b4d95284a9e16017234f683c5.jpg" class="w-full h-40 object-cover mb-4 rounded" />
+        <h3 class="text-xl font-bold mb-1">BGMI Campus Clash</h3>
+        <p class="text-sm text-gray-400">Play Now | Register Now</p>
+        <button onclick="openLogin()" class="join-btn mt-4 bg-cyan-500 px-4 py-2 rounded hover-glow">Join</button>
+      </div>
+
+      <div class="bg-gray-800 p-6 rounded-lg shadow-md border border-cyan-500 card-hover tournament-card" data-game="Free Fire">
+        <img src="https://i.pinimg.com/1200x/93/cb/29/93cb29065fb4fd841ad01b62304c07dc.jpg" class="w-full h-40 object-cover mb-4 rounded" />
+        <h3 class="text-xl font-bold mb-1">Free Fire Royale</h3>
+        <p class="text-sm text-gray-400">Play Now | Register Now</p>
+        <button onclick="openLogin()"  class="join-btn mt-4 bg-cyan-500 px-4 py-2 rounded hover-glow">Join</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- LEADERBOARD -->
+  <section id="leaderboard" class="max-w-6xl mx-auto px-4 py-16" data-aos="fade-up">
+    <h2 class="text-4xl font-bold text-green-400 text-center mb-10">🏆 Leaderboard</h2>
+    <div class="overflow-x-auto bg-gray-900 border border-green-500 rounded-lg shadow-lg">
+      <table class="w-full table-auto text-center">
+        <thead class="bg-gray-800 text-cyan-300">
+          <tr>
+            <th class="py-3">Rank</th>
+            <th class="py-3">Player</th>
+            <th class="py-3">Game</th>
+            <th class="py-3">Points</th>
+          </tr>
+        </thead>
+        <tbody id="leaderboardBody" class="text-white">
+          <tr><td colspan="4" class="small py-6">Loading leaderboard...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="about" class="bg-gray-900 py-20 px-4" data-aos="fade-up">
+    <div class="max-w-4xl mx-auto text-center">
+      <h2 class="text-4xl font-bold text-cyan-400 mb-6">About Neo Esports</h2>
+      <p class="text-gray-300 text-lg leading-relaxed">
+        Neo Esports Hub is a vibrant platform built for gamers, by gamers. We host tournaments, track leaderboards, and bring competitive gaming to your fingertips. Whether you're a casual warrior or an esports contender, our goal is to level up your experience.
+      </p>
+      <div class="mt-8 flex justify-center gap-4">
+        <button onclick="openLogin()" class="bg-green-500 text-white px-6 py-2 rounded hover-glow">Join Tournaments</button>
+        <a href="#contact" class="bg-cyan-500 text-white px-6 py-2 rounded hover-glow">Contact Us</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact" class="bg-black py-20 px-4" data-aos="fade-up">
+    <div class="max-w-4xl mx-auto text-center">
+      <h2 class="text-4xl font-bold text-green-400 mb-6">☎ Contact Us</h2>
+      <p class="text-gray-300 mb-4">📧 Email: <a href="mailto:neoesportshub01@gmail.com" class="text-cyan-400">neoesportshub01@gmail.com</a></p>
+      <p class="text-gray-300 mb-4">📲 Phone: +91 837 984 1260</p>
+    <p class="text-gray-300">📍Address: Amravati,<br> Maharashtra, India – 444601</p>
+      <div class="flex justify-center items-center gap-2"> 
+        <a href="https://discord.gg/PBxDwwjJDz"><img src="img/DISCORD.png" class="w-10 h-10 rounded-full border border-white-500 shadow-lg" alt="Discord"></a>
+        <img src="img/Insta.jpg" class="w-10 h-10 rounded-full border border-white-500 shadow-lg" alt="Instagram"/>
+        <img src="img/youtube logo.jpg" class="w-10 h-10 rounded-full border border-white-500 shadow-lg" alt="youTube"/>
+      </div>
+    </div>
+  </section>
+
+  <div id="authModal" class="fixed inset-0 hidden z-50 modal-bg">
+    <div class="modal-card">
+      <div class="relative">
+    <button id="closeModal" class="absolute top-0 right-4 text-red-400 text-5xl font-light hover:text-red-500 transition transform hover:scale-125">&times;</button>
+   
+</div>
+
+      <form id="loginForm" class="box">
+        <h1 class="text-xl font-bold mb-3">Login</h1>
+        <div class="field">
+          <label for="loginEmail">Email</label>
+          <input id="loginEmail" type="email" placeholder="Enter your email" required />
+        </div>
+        <div class="field relative password-field">
+          <label for="loginPassword">Password</label>
+          <input id="loginPassword" type="password" placeholder="Enter password" required />
+          <button type="button" class="eye-btn" onclick="togglePassword('loginPassword')" aria-label="Toggle password">👁</button>
+        </div>
+
+        <button type="submit" class="btn">Login</button>
+        <div id="googleSignInBtn" class="mt-3"></div>
+
+        <div class="links mt-4">
+          <a href="#" onclick="showForgot();return false;">Forgot Password?</a>
+        </div>
+
+        <div class="mt-4">
+          <button type="button" class="btn alt" onclick="showRegister()">Register Here</button>
+        </div>
+        
+      </form>
+
+      <!-- Register -->
+      <form id="registerForm" class="box hidden">
+        <h1 class="text-xl font-bold mb-3">Register</h1>
+        <div class="field">
+          <label for="regUsername">Username</label>
+          <input id="regUsername" type="text" placeholder="Enter username" required />
+        </div>
+        <div class="field">
+          <label for="regEmail">Email</label>
+          <input id="regEmail" type="email" placeholder="Enter email" required />
+        </div>
+        <div class="field relative password-field">
+          <label for="regPassword">Password</label>
+          <input id="regPassword" type="password" placeholder="Enter password" required />
+          <button type="button" class="eye-btn" onclick="togglePassword('regPassword')">👁</button>
+        </div>
+
+        <button id="registerBtn" type="submit" class="btn">Register</button>
+        <div class="mt-4">
+          <button type="button" class="btn alt" onclick="showLogin()">Back to Login</button>
+        </div>
+      </form>
+
+      <!-- Forgot -->
+      <form id="forgotForm" class="box hidden">
+        <h1 class="text-xl font-bold mb-3">Reset Password</h1>
+        <div class="field">
+          <label for="forgotEmail">Email</label>
+          <input id="forgotEmail" type="email" placeholder="Enter your registered email" required />
+        </div>
+        <button type="submit" class="btn">Send Reset Link</button>
+        <div class="mt-4">
+          <button type="button" class="btn alt" onclick="showLogin()">Back to Login</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+<!-- Background Music -->
+<audio id="bgMusic" loop>
+  <source src="Sound/hard.mp3" type="audio/mpeg">
+  Your browser +does not support the audio element.
+</audio>
+
+<!-- Music Control Button -->
+<button id="musicToggle">
+  🔊 Play Music
+</button>
+
+
+  <!-- Footer -->
+  <footer class="bg-gray-900 py-6 text-center text-gray-400">
+    &copy; 2025 Neo Esports Hub. All rights reserved.
+  </footer>
+  
+  <!-- AOS & GSI -->
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+
+<!-- Floating Button -->
+<div id="chat-toggle" style="
+  position:fixed;
+  right:22px; bottom:22px;
+  width:60px; height:60px;
+  border-radius:50%;
+  background:#2563eb;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer;
+  z-index:9999;
+  box-shadow:0 10px 20px rgba(0,0,0,.4);
+">
+  <img src="https://cdn-icons-png.flaticon.com/512/4712/4712101.png"
+       style="width:35px;">
+</div>
+
+<!-- Chat Window -->
+<div id="chat-container" style="
+  position:fixed;
+  right:20px; bottom:95px;
+  width:350px; height:500px;
+  background:#12141b;
+  border:1px solid #1f2430;
+  border-radius:12px;
+  overflow:hidden;
+  display:none;
+  opacity:0;
+  transform:translateY(10px);
+  z-index:9998;
+  transition:all .25s ease;
+  flex-direction:column;
+">
+  <div style="
+    padding:12px;
+    background:#171923;
+    color:white;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-weight:600;
+  ">
+    NEO Assist 🤖
+    <button id="chat-close" style="
+      font-size:18px;
+      background:none;
+      border:none;
+      color:#a1a1aa;
+      cursor:pointer;
+    ">✕</button>
+  </div>
+
+  <div id="chat-messages" style="
+    flex:1;
+    padding:12px;
+    overflow-y:auto;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    color:white;
+    font-size:15px;
+  "></div>
+
+  <div style="display:flex; gap:8px; padding:10px;">
+    <input id="user-input"
+           placeholder="Ask NEO..."
+           style="
+             flex:1; padding:10px;
+             background:#0d0f14; color:white;
+             border:1px solid #1f2430;
+             border-radius:8px;
+           ">
+    <button id="send-btn"
+            style="
+              padding:10px 14px;
+              background:#2563eb; color:white;
+              border:none;
+              border-radius:8px;
+              cursor:pointer;
+            ">Send</button>
+  </div>
+</div>
+
+
+<script>
+/* ✅ SIMPLE SINGLE-FILE CHATBOT */
+
+const API_KEY = "AIzaSyB8Xl3RQMHUhsiJS4Kk2y64Rsnwoh3jVkI"; // your Firebase API key
+
+// UI Elements
+const toggle = document.getElementById("chat-toggle");
+const container = document.getElementById("chat-container");
+const closeBtn = document.getElementById("chat-close");
+const messages = document.getElementById("chat-messages");
+const input = document.getElementById("user-input");
+const sendBtn = document.getElementById("send-btn");
+
+// Open Chat
+toggle.addEventListener("click", () => {
+  container.style.display = "flex";
+  setTimeout(() => {
+    container.style.opacity = "1";
+    container.style.transform = "translateY(0)";
+  }, 10);
+});
+
+// Close Chat
+closeBtn.addEventListener("click", () => {
+  container.style.opacity = "0";
+  container.style.transform = "translateY(10px)";
+  setTimeout(() => {
+    container.style.display = "none";
+  }, 200);
+});
+
+// Add message to UI
+function addMsg(text, type="ai") {
+  const div = document.createElement("div");
+  div.style.maxWidth = "80%";
+  div.style.padding = "10px 12px";
+  div.style.borderRadius = "12px";
+  div.style.whiteSpace = "pre-wrap";
+
+  if (type === "user") {
+    div.style.alignSelf = "flex-end";
+    div.style.background = "#2563eb";
+    div.style.color = "#fff";
+  } else {
+    div.style.alignSelf = "flex-start";
+    div.style.background = "#1a1d26";
+    div.style.border = "1px solid #1f2430";
+  }
+
+  div.innerText = text;
+  messages.appendChild(div);
+  messages.scrollTop = messages.scrollHeight;
+}
+
+// Typing indicator
+function showTyping() {
+  let t = document.createElement("div");
+  t.id = "typing";
+  t.innerText = "NEO is typing…";
+  t.style.opacity = "0.7";
+  t.style.fontStyle = "italic";
+  messages.appendChild(t);
+  messages.scrollTop = messages.scrollHeight;
+}
+
+function hideTyping() {
+  let t = document.getElementById("typing");
+  if (t) t.remove();
+}
+
+// AI request
+async function askAI(text) {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+
+  const payload = {
+    contents: [{
+      parts: [{ text: text }]
+    }]
+  };
+
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+    console.log("AI response:", data);
+
+    // ✅ If the new Gemini format returns output_text
+    if (data?.candidates?.[0]?.output_text) {
+      return data.candidates[0].output_text;
+    }
+
+    // ✅ If old format returns parts
+    if (data?.candidates?.[0]?.content?.parts?.[0]?.text) {
+      return data.candidates[0].content.parts[0].text;
+    }
+
+    // ✅ If API returned an error
+    if (data?.error?.message) {
+      return "⚠️ Error: " + data.error.message;
+    }
+
+    return "Hmm… I couldn’t understand that 😟";
+
+  } catch (err) {
+    console.error(err);
+    return "Server error 😭 Try again later.";
+  }
+}
+
+
+// Handle send
+async function sendMessage() {
+  const text = input.value.trim();
+  if (!text) return;
+
+  addMsg(text, "user");
+  input.value = "";
+
+  showTyping();
+  const reply = await askAI(text);
+  hideTyping();
+
+  addMsg(reply, "ai");
+}
+
+sendBtn.addEventListener("click", sendMessage);
+input.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") sendMessage();
+});
+
+</script>
+
+<!-- ✅ END CHATBOT -->
+
+
+  <script>
+    AOS.init({ duration:1200, once:true });
+//  Firebase config 
+    const firebaseConfig = {
+      apiKey: "AIzaSyB8Xl3RQMHUhsiJS4Kk2y64Rsnwoh3jVkI",
+      authDomain: "neo-esports-hub.firebaseapp.com",
+      projectId: "neo-esports-hub",
+      storageBucket: "neo-esports-hub.firebasestorage.app",
+      messagingSenderId: "1033553084106",
+      appId: "1:1033553084106:web:33a391d3e7eb1faaae7e33",
+      measurementId: "G-5952VXT79F"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    // site loader  
+    const siteLoader = document.getElementById('siteLoader');
+    window.addEventListener('load', () => {
+      setTimeout(()=> siteLoader.style.display = 'none', 450); // short fade out
+    });
+
+    // mobile menu
+    const mobileBtn = document.getElementById('mobile-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    mobileBtn.addEventListener('click', ()=> mobileMenu.classList.toggle('hidden'));
+
+    // auth modal controls
+    const authModal = document.getElementById('authModal');
+    const closeModal = document.getElementById('closeModal');
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    const forgotForm = document.getElementById('forgotForm');
+
+    function openLogin(){ authModal.classList.remove('hidden'); showLogin(); }
+    function hideAuth(){ authModal.classList.add('hidden'); }
+    closeModal.addEventListener('click', hideAuth);
+
+    function showLogin(){ loginForm.classList.remove('hidden'); registerForm.classList.add('hidden'); forgotForm.classList.add('hidden'); }
+    function showRegister(){ loginForm.classList.add('hidden'); registerForm.classList.remove('hidden'); forgotForm.classList.add('hidden'); }
+    function showForgot(){ loginForm.classList.add('hidden'); registerForm.classList.add('hidden'); forgotForm.classList.remove('hidden'); }
+
+    function togglePassword(id){
+      const el = document.getElementById(id);
+      if(!el) return;
+      el.type = el.type === 'password' ? 'text' : 'password';
+    }
+
+    //auth helpers
+    let currentUser = null;
+
+    auth.onAuthStateChanged(user => {
+      currentUser = user;
+     
+      if(user) {
+        hideAuth();   
+        if(document.getElementById('scorePlayer')) {
+          const nameEl = document.getElementById('scorePlayer');
+          db.collection('users').doc(user.uid).get()
+            .then(doc => {
+              if(doc.exists && doc.data().username) nameEl.value = doc.data().username;
+              else nameEl.value = user.email.split('@')[0];
+            }).catch(()=> nameEl.value = user.email.split('@')[0]);
+        }
+      }
+    });
+
+    //  LOGIN
+    loginForm.addEventListener('submit', e => {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      if(!email || !password) return alert('Please fill all login fields.');
+
+    
+      const loginBtn = loginForm.querySelector('button[type="submit"]');
+      if (loginBtn) loginBtn.disabled = true;
+
+      auth.signInWithEmailAndPassword(email, password)
+        .then(() => {
+          alert('Login successful');
+          loginForm.reset();
+          setTimeout(() => window.location.href = "create-tournament.html", 1000);
+        })
+        .catch((err) => {
+          console.error("Login Error:", err);
+          alert("Login Failed: " + err.message);
+        })
+        .finally(() => {
+          if (loginBtn) loginBtn.disabled = false;
+        });
+    });
+
+// REGISTER 
+registerForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const submitBtn = registerForm.querySelector('button[type="submit"]') || document.getElementById('registerBtn');
+  if (submitBtn) submitBtn.disabled = true;
+
+  try {
+    const username = document.getElementById('regUsername').value.trim();
+    const email = document.getElementById('regEmail').value.trim();
+    const password = document.getElementById('regPassword').value;
+    if(!username || !email || !password) {
+      alert('Please fill all register fields.');
+      return;
+    }
+
+    const cred = await auth.createUserWithEmailAndPassword(email, password);
+    const uid = cred.user.uid;
+    await db.collection('users').doc(uid).set({
+      username,
+      email,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    alert('Registration successful — welcome!');
+    registerForm.reset();
+    showLogin();
+
+    // Redirect after signup
+    setTimeout(() => window.location.href = "create-tournament.html", 1000);
+  } catch (err) {
+    console.error("Registration Error:", err);
+    if (err && err.code === "auth/email-already-in-use") {
+      alert("This email is already registered. Please log in.");
+      window.location.href = "index.html";
+    } else {
+      alert("Registration Failed: " + (err && err.message ? err.message : 'Unknown error'));
+    }
+  } finally {
+    if (submitBtn) submitBtn.disabled = false;
+  }
+});
+
+    // Forgot PASSWORD
+    forgotForm.addEventListener('submit', e => {
+      e.preventDefault();
+      const email = document.getElementById('forgotEmail').value.trim();
+      if(!email) return alert('Enter your email to reset.');
+      auth.sendPasswordResetEmail(email)
+        .then(()=> { alert('Reset link sent — check your email.'); showLogin(); })
+        .catch(err => alert(err.message));
+    });
+
+   // GOOGLE SIGN-IN
+  window.onload = function() {
+  window.google?.accounts?.id?.initialize({
+    client_id: "1033553084106-qpmf7pbb6t1g6ovnb118mqrdjgl19grq.apps.googleusercontent.com", 
+    // 👈 your real client ID here
+    callback: handleGsiResponse
+  });
+
+  //Google button
+  try {
+    google.accounts.id.renderButton(
+      document.getElementById("googleSignInBtn"),
+      { theme: "outline", size: "large", width: "100%" }
+    );
+  } catch (e) {
+    console.warn("Google Sign-In not ready:", e);
+  }
+  if (typeof initLeaderboardRealtime === "function") {
+    initLeaderboardRealtime();
+  }
+};
+
+async function handleGsiResponse(response) {
+  try {
+    // Convert Google token to Firebase credential
+    const credential = firebase.auth.GoogleAuthProvider.credential(response.credential);
+    const result = await auth.signInWithCredential(credential);
+    const user = result.user;
+
+    // Check Firestore
+    const userRef = db.collection("users").doc(user.uid);
+    const userSnap = await userRef.get();
+    if (!userSnap.exists) {
+      const name = user.displayName || user.email.split('@')[0];
+      await userRef.set({
+        username: name,
+        email: user.email,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      });
+    }
+
+    alert("✅ Google sign-in successful!");
+    window.location.href = "create-tournament.html";
+
+  } catch (err) {
+    console.error("Google sign-in error:", err);
+    alert("❌ Google sign-in failed: " + err.message);
+  }
+}
+    const joinBtns = document.querySelectorAll('.join-btn');
+    const scoreModal = document.getElementById('scoreModal');
+    const closeScore = document.getElementById('closeScore');
+    const scoreForm = document.getElementById('scoreForm');
+    let currentGameForScore = '';
+
+    // open modal when logged in
+    joinBtns.forEach(btn => {
+      btn.addEventListener('click', (ev) => {
+        const card = ev.currentTarget.closest('.tournament-card');
+        const game = card?.dataset?.game || card?.querySelector('h3')?.innerText || 'Tournament';
+        currentGameForScore = game;
+        if(!auth.currentUser){
+          openLogin();
+          return;
+        }
+        document.getElementById('scoreGame').value = game;
+        db.collection('users').doc(auth.currentUser.uid).get().then(doc => {
+          const uname = doc.exists && doc.data().username ? doc.data().username : (auth.currentUser.email?.split('@')[0] || 'Player');
+          document.getElementById('scorePlayer').value = uname;
+        }).catch(()=> {
+          document.getElementById('scorePlayer').value = auth.currentUser.email.split('@')[0];
+        });
+        scoreModal.classList.remove('hidden');
+      });
+    });
+
+    closeScore.addEventListener('click', ()=> scoreModal.classList.add('hidden'));
+    scoreForm.addEventListener('submit', e => {
+      e.preventDefault();
+      const player = document.getElementById('scorePlayer').value || 'Player';
+      const game = document.getElementById('scoreGame').value || currentGameForScore;
+      const score = parseInt(document.getElementById('scoreValue').value) || 0;
+      if(score < 0) return alert('Enter a valid score');
+
+      db.collection('leaderboard').add({
+        name: player,
+        game,
+        score,
+        uid: auth.currentUser.uid,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      }).then(()=> {
+        alert('Score submitted! Good luck ✨');
+        scoreModal.classList.add('hidden');
+        scoreForm.reset();
+      }).catch(err => alert('Error saving score: ' + err.message));
+    });
+
+    // realtime leaderboard
+    function initLeaderboardRealtime(){
+      const tbody = document.getElementById('leaderboardBody');
+      db.collection('leaderboard').orderBy('score','desc').limit(10)
+        .onSnapshot(snapshot => {
+          tbody.innerHTML = '';
+          if(snapshot.empty){
+            tbody.innerHTML = '<tr><td colspan="4" class="small py-6">No scores yet — be the first!</td></tr>';
+            return;
+          }
+          let rank = 1;
+          snapshot.forEach(doc => {
+            const d = doc.data();
+            const tr = document.createElement('tr');
+            tr.className = 'hover:bg-gray-700';
+            tr.innerHTML = `
+              <td class="py-2">${rank}</td>
+              <td>${escapeHtml(d.name || 'Player')}</td>
+              <td>${escapeHtml(d.game || '')}</td>
+              <td>${d.score ?? 0}</td>
+            `;
+            tbody.appendChild(tr);
+            rank++;
+          });
+        }, err => {
+          tbody.innerHTML = '<tr><td colspan="4" class="small py-6">Error loading leaderboard</td></tr>';
+          console.error(err);
+        });
+    }
+    </script>
+
+
+
+<script>
+  const music = document.getElementById('bgMusic');
+  const btn = document.getElementById('musicToggle');
+  let isPlaying = false;
+
+  btn.addEventListener('click', () => {
+    if (!isPlaying) {
+      music.play();
+      btn.textContent = '🔇 Stop Music';
+      isPlaying = true;
+    } else {
+      music.pause();
+      btn.textContent = '🔊 Play Music';
+      isPlaying = false;
+    }
+  });
+</script>
+
+<script type="module" src="js/firebase.js"></script>
+
+<script type="module" src="js/customprompts.js"></script>
+<script type="module" src="js/chatbot.js"></script>
+<script type="module" src="js/chatbotUI.js"></script>
+
+   </body>
+   </html>

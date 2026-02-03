@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Reset Password — Neo Esports</title>
+  <link rel="stylesheet" href="style.css">
+  <style>:root{
+  --bg:#0b0b0d;
+  --card:#111318;
+  --muted:#ffffff;
+  --accent:#00ff99;
+  --accent-2:#ff33ff;
+}
+
+/* headings */
+.box h1 {
+  text-align: center;
+  margin-bottom: 18px;
+  font-size: 23px;
+  color: var(--accent);
+}
+    /* fields */
+.field {
+  margin-bottom: 14px;
+}
+.field label {
+  text-align:left;
+  display: block;
+  font-size: 20px;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.field input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.04);
+  background: var(--card);
+  color: #fff;
+  font-size: 14px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.01);
+}
+.field input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 6px var(--accent);
+}
+
+/* password field + eye button */
+.password-field {
+  position: relative;
+}
+.password-field input {
+  width: 100%;
+  padding-right: 40px; /* space for the eye button */
+  box-sizing: border-box;
+}
+.password-field .eye-btn {
+  position: absolute;
+  top: 100%;
+  right: 12px;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: 35px;
+  color: var(--accent);
+}
+
+/* buttons */
+.btn {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  background: linear-gradient(90deg,var(--accent), #8816e5);
+  color: #001;
+  font-weight: 700;
+  margin-top: 6px;
+  transition: 0.2s ease;
+}
+.btn:hover {
+  opacity: 0.9;
+}
+.btn.alt-btn {
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid rgba(255,255,255,0.04);
+  margin-top: 12px;
+}
+.btn.alt-btn:hover {
+  background: rgba(255,255,255,0.05);
+}
+
+/* links */
+.links {
+  text-align: center;
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.links a {
+  color: var(--accent);
+  text-decoration: none;
+}
+</style>
+</head>
+<body>
+  <main class="auth-page">
+    <section class="box">
+      <h1>Reset Password</h1>
+      <div class="form">
+        <div class="field">
+          <label for="forgotEmail">Email</label>
+          <input id="forgotEmail" type="email" placeholder="you@game.com" required>
+        </div>
+
+        <button id="forgotBtn" class="btn" type="button">Send Reset Link</button>
+
+        <p class="links">
+          Back to <a href="index.html">Log in</a>
+        </p>
+      </div>
+    </section>
+  </main>
+
+
+</body>
+</html>

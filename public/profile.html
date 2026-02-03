@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Esports Dashboard</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<style>
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #0f0f0f;
+    color: #fff;
+  }
+
+  .dashboard {
+    display: flex;
+    min-height: 100vh;
+    flex-wrap: wrap;
+  }
+
+  /* Sidebar */
+  .sidebar {
+    width: 220px;
+    background: #1a1a1a;
+    padding: 20px;
+    flex-shrink: 0;
+  }
+
+  .sidebar h2 {
+    margin-bottom: 20px;
+    color: #00ffff;
+  }
+
+  .sidebar ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  .sidebar li {
+    padding: 12px 10px;
+    cursor: pointer;
+    border-left: 4px solid transparent;
+  }
+
+  .sidebar li:hover, .sidebar li.active {
+    background: #292929;
+    border-left: 4px solid #00ffff;
+  }
+
+  /* Main Content */
+  .main-content {
+    flex: 1;
+    padding: 30px;
+    min-width: 0;
+  }
+
+  .box {
+    display: inline-block;
+    height: 40px;
+    width: 18%;
+    background: #2c2c2c;
+    padding: 15px;
+    margin: 10px 1%;
+    border-radius: 6px;
+    text-align: center;
+  }
+
+  .section { display: none; }
+  .section.active { display: block; }
+
+  .avatar {
+    width: 140px;
+    height: 135px;
+    border-radius: 50%;
+    border: 2px solid #ffffff;
+    margin-bottom: 15px;
+    object-fit: cover;
+  }
+
+  input, select, textarea {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0 20px;
+    background: #2c2c2c;
+    border: none;
+    color: #fff;
+    border-radius: 6px;
+  }
+
+  h3 {
+    color: #00ffff;
+    font-weight: bold;
+    font-family: Roboto, sans-serif;
+    font-size: 25px;
+  }
+
+  h4 {
+    color: rgb(255, 255, 255);
+    font-family: sans-serif;
+    font-size: 18px;
+    margin-top: 30px;
+    font-weight: bold;
+  }
+
+  .btn {
+    padding: 10px 20px;
+    background: #00ffff;
+    border: none;
+    color: #000;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 10px;
+    margin-top: 10px;
+  }
+
+  .btn:hover { background: #00cccc; }
+
+  table, th, td, tr {
+    padding: 12px 10px;
+    border: 1px solid #333;
+    text-align: left;
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 14px;
+  }
+
+  .btn1 {
+    padding: 5px 10px;
+    background: #03fcfc;
+    font-weight: bolder;
+    font-size: x-large;
+    border: none;
+    color: #000;
+    height: 40px;
+    width: 55px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-bottom: 20px;
+  }
+
+  /* Responsive */
+  @media (max-width: 1024px) {
+    .box { width: 30%; margin: 10px 1%; }
+  }
+
+  @media (max-width: 768px) {
+    .dashboard { flex-direction: column; }
+    .sidebar {
+      width: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-around;
+    }
+    .sidebar ul { width: 100%; display: flex; flex-wrap: wrap; justify-content: center; padding: 0; }
+    .sidebar li { width: 45%; margin: 5px 2.5%; text-align: center; border-left: none; border-radius: 6px; }
+    .sidebar li:hover, .sidebar li.active { border-left: none; background: #292929; }
+    .main-content { padding: 15px; }
+    .box { width: 45%; margin: 5px 2.5%; }
+    input, select, textarea { width: 100%; }
+  }
+
+  @media (max-width: 480px) {
+    .box { width: 100%; margin: 5px 0; }
+    .sidebar li { width: 100%; margin: 5px 0; }
+    .main-content { padding: 10px; }
+  }
+</style>
+</head>
+<body>
+<div class="dashboard">
+  <!-- Sidebar -->
+  <nav class="sidebar">
+     <a href="create-tournament.html" class="btn1" title="Back"><i class="fa-solid fa-arrow-left" style="color: #060002;"></i></a>
+    <h2>Dashboard</h2>
+    <ul>
+      <li data-section="profile">My Profile</li>
+      <li data-section="wallet">Wallet</li>
+      <li data-section="history">Transaction History</li>
+      <li data-section="redeem">Redeem Code</li>
+      <li data-section="refer">Refer Code</li>
+    </ul>
+    <button class="btn" id="logoutBtn" type="button" style="font-size:15px; font-family:sans-serif;"><b>Log out</b></button>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Profile -->
+    <div class="section" id="profile">
+      <h3>My Profile</h3>
+      <img src="empty-img.png" alt="Profile" class="avatar">
+      <input type="file" accept="image/*" id="avatarFile">
+      <label>Name:</label>
+      <input type="text" id="name" placeholder="Your name">
+      <label>Gamer Handle:</label>
+      <input type="text" id="gamerHandle" placeholder="e.g. ShadowSniper">
+      <label>Bio:</label>
+      <textarea id="bio" placeholder="Main roles, play style..."></textarea>
+      <label>Location:</label>
+      <input type="text" id="location" placeholder="City, Country">
+      <label>Social Links:</label>
+      <input type="text" id="social" placeholder="twitter.com/...">
+      <div class="form-actions">
+        <button class="btn" id="saveProfileBtn">Save</button>
+        <a href="forgot.html"><button class="btn">Change Password</button></a>
+      </div>
+    </div>
+
+    <!-- Wallet -->
+    <div class="section" id="wallet">
+      <h3>Wallet</h3>
+      <div class="wallet">
+        <div class="box" id="available"><strong>Available:</strong> ₹0</div>
+        <div class="box" id="deposit"><strong>Deposit:</strong> ₹0</div>
+        <div class="box" id="pending"><strong>Pending:</strong> ₹0</div>
+        <div class="box" id="withdrawal"><strong>Withdrawal:</strong> ₹0</div>
+        <div class="box" id="total"><strong>Total:</strong> ₹0</div>
+      </div>
+      <h4>Deposit :</h4>
+      <input type="number" id="depositInput" placeholder="Amount (Min ₹20 Deposit)">
+      <button class="btn" id="depositBtn">Deposit</button>
+      <h4>Withdraw Funds :</h4>
+      <input type="number" id="withdrawInput" placeholder="Amount (Min ₹50 Withdraw)">
+      <h4>UPI Details :</h4>
+      <input type="text" id="upi" placeholder="Enter UPI ID">
+      <button class="btn" id="withdrawRequestBtn">Request Withdraw</button>
+    </div>
+
+    <!-- Transaction History -->
+    <div class="section" id="history">
+      <h3>Transaction History</h3>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
+      <input type="text" id="searchHistory" placeholder="Search date, type, details, amount, status..." style="flex:1;min-width:180px;">
+      <select id="filterHistory" style="width:160px;">
+        <option value="All">All</option>
+        <option value="Deposit">Deposit</option>
+        <option value="Withdraw">Withdraw</option>
+        <option value="Pending">Pending</option>
+        <option value="Success">Success</option>
+        <option value="Failed">Failed</option>
+      </select>
+      </div>
+      <table>
+      <thead>
+        <tr><th>Date</th><th>Type</th><th>Details</th><th>Amount</th><th>Status</th></tr>
+      </thead>
+      <tbody id="historyBody">
+        <tr><td colspan="5" style="text-align:center;">No Transactions Yet</td></tr>
+      </tbody>
+      </table>
+    </div>
+
+    <script>
+      // Simple client-side search + filter for the transaction table.
+      (function(){
+      const search = () => {
+        const q = (document.getElementById('searchHistory').value || '').toLowerCase().trim();
+        const filter = (document.getElementById('filterHistory').value || 'All').toLowerCase();
+        const rows = Array.from(document.querySelectorAll('#historyBody tr'));
+
+        // If there are no real rows, nothing to filter
+        rows.forEach(row => {
+        // skip if row is the placeholder single-cell row
+        const cells = row.querySelectorAll('td');
+        if (cells.length < 3) return;
+        const date = (cells[0].textContent || '').toLowerCase();
+        const type = (cells[1].textContent || '').toLowerCase();
+        const details = (cells[2].textContent || '').toLowerCase();
+        const amount = (cells[3].textContent || '').toLowerCase();
+        const status = (cells[4] ? (cells[4].textContent || '').toLowerCase() : '');
+
+        const matchesFilter = (filter === 'all') || type.includes(filter) || status.includes(filter);
+        const matchesQuery = !q || date.includes(q) || type.includes(q) || details.includes(q) || amount.includes(q) || status.includes(q);
+
+        row.style.display = (matchesFilter && matchesQuery) ? '' : 'none';
+        });
+      };
+
+      // Apply filters when user types / changes selection
+      document.addEventListener('input', (e) => {
+        if (e.target && (e.target.id === 'searchHistory')) search();
+      });
+      document.addEventListener('change', (e) => {
+        if (e.target && (e.target.id === 'filterHistory')) search();
+      });
+
+      // Re-apply filters if rows are updated dynamically by your module script
+      const tbody = document.getElementById('historyBody');
+      const mo = new MutationObserver(() => {
+        // allow DOM to settle
+        setTimeout(search, 20);
+      });
+      mo.observe(tbody, { childList: true, subtree: true });
+
+      // initial run (in case module filled rows before this script executed)
+      document.addEventListener('DOMContentLoaded', () => setTimeout(search, 50));
+      })();
+    </script>
+
+    <!-- Redeem -->
+    <div class="section" id="redeem">
+      <h3>Redeem Code</h3>
+      <input type="text" id="redeemInput" placeholder="Enter your code">
+      <button class="btn" id="applyCode">Apply</button>
+    </div>
+
+    <!-- Refer -->
+    <div class="section" id="refer">
+      <h3>Refer a Friend</h3>
+      <input type="text" id="refCode" value="ABC123XYZ" readonly>
+      <button class="btn" id="copyRef">Copy</button>
+      <p>Share your code and earn rewards!</p>
+    </div>
+  </div>
+</div>
+
+<!-- Razorpay Checkout (non-module) -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<script type="module">
+
+//----------------------------------------
+// FIREBASE IMPORTS
+//----------------------------------------
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+import {
+  getFirestore,
+  doc,
+  getDoc,
+  setDoc,
+  updateDoc,
+  addDoc,
+  collection,
+  serverTimestamp,
+  getDocs
+} from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+
+import {
+  getStorage,
+  ref,
+  uploadBytes,
+  getDownloadURL
+} from "https://www.gstatic.com/firebasejs/11.0.2/firebase-storage.js";
+
+//----------------------------------------
+// FIREBASE CONFIG FIXED
+//----------------------------------------
+const firebaseConfig = {
+  apiKey: "AIzaSyB8Xl3RQMHUhsiJS4Kk2y64Rsnwoh3jVkI",
+  authDomain: "neo-esports-hub.firebaseapp.com",
+  projectId: "neo-esports-hub",
+  storageBucket: "neo-esports-hub.appspot.com",
+  messagingSenderId: "1033553084106",
+  appId: "1:1033553084106:web:33a391d3e7eb1faaae7e33"
+};
+
+//----------------------------------------
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const storage = getStorage(app);
+
+let currentUser = null;
+
+//----------------------------------------
+// UI HELPERS
+//----------------------------------------
+function formatCurrency(n){ return "₹" + (Number(n) || 0); }
+
+function updateWalletUI(wallet){
+  const keys = ["available","deposit","pending","withdrawal","total"];
+  keys.forEach(k=>{
+    document.getElementById(k).innerHTML =
+      `<strong>${k.charAt(0).toUpperCase()+k.slice(1)}:</strong> ${formatCurrency(wallet[k])}`;
+  });
+}
+
+function addTransactionRow(t){
+  const tbody = document.getElementById("historyBody");
+  const row = document.createElement("tr");
+  row.innerHTML = `
+    <td>${t.date || ""}</td>
+    <td>${t.type || ""}</td>
+    <td>${t.details || ""}</td>
+    <td>${formatCurrency(t.amount)}</td>
+  `;
+  tbody.appendChild(row);
+}
+
+//----------------------------------------
+// SIDEBAR NAVIGATION
+//----------------------------------------
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll(".sidebar li").forEach(li=>{
+    li.addEventListener("click", ()=>{
+      document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"));
+      document.getElementById(li.dataset.section).classList.add("active");
+      document.querySelectorAll(".sidebar li").forEach(li2=>li2.classList.remove("active"));
+      li.classList.add("active");
+    });
+  });
+
+  document.querySelector('[data-section="profile"]').click();
+});
+
+//----------------------------------------
+// LOGOUT
+//----------------------------------------
+document.getElementById("logoutBtn").addEventListener("click", async()=>{
+  try{
+    await signOut(auth);
+    localStorage.clear();
+    window.location.replace("index.html");
+  }catch(err){
+    console.error(err);
+    alert("Logout failed");
+  }
+});
+
+//----------------------------------------
+// MAIN AUTH
+//----------------------------------------
+onAuthStateChanged(auth, async(user)=>{
+  if(!user){ return; }
+
+  currentUser = user;
+
+  const playerRef = doc(db, "players", currentUser.uid);
+
+  // ✅ Ensure player doc exists
+  const snap = await getDoc(playerRef);
+  if(!snap.exists()){
+    await setDoc(playerRef, {
+      email: currentUser.email,
+      profile: {},
+      wallet: {available:0,deposit:0,pending:0,withdrawal:0,total:0}
+    });
+  }
+
+  // ✅ Reload fresh data
+  const data = (await getDoc(playerRef)).data();
+
+  // ✅ Load Profile
+  const p = data.profile || {};
+
+  document.getElementById("name").value = p.name || "";
+  document.getElementById("gamerHandle").value = p.gamerHandle || "";
+  document.getElementById("bio").value = p.bio || "";
+  document.getElementById("location").value = p.location || "";
+  document.getElementById("social").value = p.social || "";
+
+  if(profile.avatar){
+    document.querySelector(".avatar").src = profile.avatar + "?t=" + Date.now(); // ✅ fix cache
+  }
+
+  // ✅ Load wallet
+  updateWalletUI(data.wallet || {});
+
+  // ✅ Load transactions
+  const txRef = collection(db, "players", currentUser.uid, "transactions");
+  const txSnap = await getDocs(txRef);
+
+  const tbody = document.getElementById("historyBody");
+  tbody.innerHTML = "";
+
+  if(txSnap.empty){
+    tbody.innerHTML = "<tr><td colspan='5' style='text-align:center;'>No Transactions Yet</td></tr>";
+  } else {
+    txSnap.forEach(docSnap=>{
+       const t = docSnap.data();
+    const row = document.createElement("tr");
+    
+  let color = "yellow";
+  if (t.status === "Success") color = "lightgreen";
+  if (t.status === "Failed") color = "red";
+    row.innerHTML = `
+      <td>${t.date}</td>
+      <td>${t.type}</td>
+      <td>${t.details}</td>
+      <td>₹${t.amount}</td>
+     <td style="color:${color}; font-weight:bold;">${t.status}</td>
+  `;
+    tbody.appendChild(row);
+    });
+  }
+});
+
+//----------------------------------------
+// AVATAR UPLOAD
+//----------------------------------------
+document.getElementById("avatarFile").addEventListener("change", async (e) => {
+  const file = e.target.files[0];
+  if (!file || !currentUser) return;
+
+  try {
+    const storageRef = ref(storage, `avatars/${currentUser.uid}`);
+    await uploadBytes(storageRef, file);
+    const url = await getDownloadURL(storageRef);
+
+    document.querySelector(".avatar").src = url + "?t=" + Date.now();
+
+    await updateDoc(doc(db, "players", currentUser.uid), {
+      "profile.avatar": url
+    });
+
+    alert("✅ Avatar updated!");
+
+  } catch (err) {
+    console.error(err);
+    alert("❌ Avatar upload failed.");
+  }
+});
+
+//----------------------------------------
+// SAVE PROFILE
+//----------------------------------------
+document.getElementById("saveProfileBtn").addEventListener("click", async () => {
+  if (!currentUser) return alert("Login required.");
+
+  const profileData = {
+    name: document.getElementById("name").value,
+    gamerHandle: document.getElementById("gamerHandle").value,
+    bio: document.getElementById("bio").value,
+    location: document.getElementById("location").value,
+    social: document.getElementById("social").value,
+    avatar: document.querySelector(".avatar").src.split("?")[0]
+  };
+
+  try {
+    await updateDoc(doc(db, "players", currentUser.uid), {
+      profile: profileData,
+      updatedAt: serverTimestamp()
+    });
+
+    alert("✅ Profile updated!");
+
+  } catch (err) {
+    console.error(err);
+    alert("❌ Could not save.");
+  }
+});
+//----------------------------------------
+// DEPOSIT (RAZORPAY)
+//----------------------------------------
+document.getElementById("depositBtn").addEventListener("click", async()=>{
+
+  const amount = Number(document.getElementById("depositInput").value);
+
+  if(amount < 20) return alert("Minimum ₹20");
+
+  const options = {
+    key: "rzp_test_RbL892zlDi0yXK",
+    amount: amount * 100,
+    currency: "INR",
+    name: "Neo Esports Hub",
+    handler: async(response)=>{
+      try{
+        const playerRef = doc(db, "players", currentUser.uid);
+        const snap = await getDoc(playerRef);
+        const wallet = snap.data().wallet;
+
+        wallet.deposit += amount;
+        wallet.available += amount;
+        wallet.total = wallet.deposit - wallet.withdrawal;
+
+        await updateDoc(playerRef, { wallet });
+
+        await addDoc(collection(db, "players", currentUser.uid, "transactions"), {
+          date: new Date().toLocaleString(),
+          type: "Deposit",
+          details: "Razorpay payment success",
+          amount,
+          status: "Success",
+          createdAt: serverTimestamp()
+        });
+
+        updateWalletUI(wallet);
+        alert(`✅ ₹${amount} added`);
+
+      } catch(err){
+        console.error(err);
+        alert("Payment success, but server update failed");
+      }
+    }
+  };
+
+  const rzp = new Razorpay(options);
+  rzp.open();
+
+});
+
+//----------------------------------------
+// WITHDRAW
+document.getElementById("withdrawRequestBtn").addEventListener("click", async()=>{
+
+  const amount = Number(document.getElementById("withdrawInput").value);
+  const upi = document.getElementById("upi").value.trim();
+
+  if(amount < 50) return alert("Minimum ₹50 withdraw");
+  if(!upi) return alert("Enter UPI ID");
+
+  try {
+    const playerRef = doc(db, "players", currentUser.uid);
+    const snap = await getDoc(playerRef);
+    const wallet = snap.data().wallet;
+
+    if(wallet.available < amount) return alert("Not enough balance");
+
+    wallet.available -= amount;
+    wallet.pending += amount;
+    wallet.total = wallet.deposit - wallet.withdrawal;
+
+    await updateDoc(playerRef, { wallet });
+
+    await addDoc(collection(db, "withdrawalRequests"), {
+      userId: currentUser.uid,
+      amount,
+      upi,
+      status: "Pending",
+      timestamp: serverTimestamp()
+    });
+
+    await addDoc(collection(db, "players", currentUser.uid, "transactions"), {
+      date: new Date().toLocaleString(),
+      type: "Withdraw",
+      details: `UPI: ${upi}`,
+      amount,
+      status: "Pending",
+      createdAt: serverTimestamp()
+    });
+
+    updateWalletUI(wallet);
+    alert("✅ Withdrawal request submitted");
+
+  } catch(err){
+    console.error(err);
+    alert("Error submitting request");
+  }
+});
+
+</script>
+</body>
+</html> 

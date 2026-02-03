@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>VALORANT Tournaments | Neo Esport Hub</title>
+<script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<!-- Navbar -->
+ <header class="bg-black shadow-md sticky top-0 z-50 w-full">
+    <div class="max-w-full mx-auto px-6 py-3 flex justify-between items-center text-2xl">
+      <a href="#" class="text-3xl font-extrabold text-cyan-400 tracking-wide hover:text-white transition animate-glow">Neo Esports Hub</a>
+      <nav class="hidden md:flex space-x-5 text-white font-semibold">
+        <a href="index.html" class="hover:text-cyan-300 ">Home</a>
+        <a href="create-tournament.html" class="hover:text-cyan-300">Tournaments</a>
+        <a href="profile.html" class="hover:text-cyan-300">Profile</a>
+
+      </nav>
+      <div class="md:hidden">
+        <button id="mobile-btn" class="text-cyan-400 text-2xl">☰</button>
+      </div>
+    </div>
+    <div id="mobile-menu" class="hidden md:hidden px-4 pb-4 text-white bg-gray-800">
+      <a href="index.html" class="block py-1 hover:text-cyan-300">Home</a>
+      <a href="create-tournament.html" class="block py-1 hover:text-cyan-300">Tournaments</a>
+      <a href="profile.html" class="block py-1 hover:text-cyan-300">Profile</a>
+    </div>
+  </header>
+
+  <div class="bg-p2">
+
+    <!-- HERO / Header image -->
+    <section class="tournament-hero" aria-label="tournament hero">
+      <img src="img/banervalorant.jpeg" alt="Tournament Hero Banner">
+      <div class="hero-content">
+        <div class="hero-left">
+          <h1 style="color: rgb(212, 180, 38);">VALORANT</h1>
+          <h1>Events</h1>
+          <div class="hero-links">
+            <a class="hero-link" href="join-contestValo.html">How To Join A Contest ?</a>
+             <a class="hero-link" href="#" id="openPopupBtn">Add Valorant Username & ID</a>
+          </div>
+        </div>
+
+        <div class="hero-right">
+          <button class="hero-cta1">Create tournaments</button>
+          <button class="hero-cta2">My Tournaments</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tournaments grid -->
+    <section>
+      <div id="tournamentGrid" class="tournament-grid" aria-live="polite"></div>
+    </section>
+  </div>
+
+  <div id="popupForm">
+    <div class="popup-card">
+      <h3>Add Valorant Player</h3>
+      <input type="text" id="username" placeholder="Enter Username" required><br>
+      <input type="text" id="gameId" placeholder="Enter Valorant ID" required><br>
+      <button id="submitPlayer">Submit</button>
+      <button id="closePopup">Cancel</button>
+    </div>
+    </div>
+
+  <script>
+
+       /* ---------- TOURNAMENT DATA ---------- */
+    const tournaments = [
+      {
+        id: 'VALO-101',
+        title: 'VALORANT',
+        banner: 'img/vl.png',
+        platform: 'PC',
+        badges: ['Featured', 'Leaderboard','Entry Fee - Free'],
+        modes: '• Random Map • 5v5 •(Level Required Above - 20)',
+        start: "01-10-2025 10:00 AM",
+        prize: '₹100.00',
+        progress: 0,
+        total: 10,
+        buttonLabel: 'Join Now',
+        entryFee:0,
+        closes: 'Victory is a click away'
+      },
+      {
+        id: 'VALO-202',
+        title: 'VALORANT',
+        banner: 'img/vl.png',
+        platform: 'PC',
+        badges: ['Featured','Leaderboard','Entry Fee -₹25'],
+        modes: '• Random Map • 5v5 •(Level Required Above - 20)',
+        start: "01-10-2025 12:00 PM",
+        prize: '₹150.00',
+        progress: 0,
+        total: 10,
+        buttonLabel: 'Join Now',
+        entryFee:25,
+        closes: 'Victory is a click away'
+      },
+      {
+        id: 'VALO-303',
+        title: 'VALORANT',
+        banner: 'img/vl.png',
+        platform: 'PC',
+        badges: ['Featured','Leaderboard','Entry Fee -₹30'],
+        modes: '• Random Map • 5v5 •(Level Required Above - 20)',
+        start: "01-10-2025 2:00 PM",
+        prize: '₹200.00',
+        progress: 0,
+        total: 10,
+        buttonLabel: 'Join Now',
+        entryFee:30,
+        closes: 'Victory is a click away'
+      }
+    ];
+     //render tournaments cards
+    const grid = document.getElementById('tournamentGrid');
+       function percentOf(part,total){ 
+      return (!total||total<=0)?0:Math.round(Math.max(0,Math.min(100,
+      (part/total)*100))*100)/100; }
+    
+     
+   function renderTournaments(){
+    grid.innerHTML='';
+       tournaments.forEach(t=> {
+     const pct=percentOf(t.progress,t.total);
+    const card=document.createElement('article');
+    card.className='t-card'; 
+     card.innerHTML=`
+     <div class="t-banner">
+     <img src="${t.banner}" alt="${t.title} banner">
+     <div class="platform-badge">${t.platform}</div>
+     </div>
+     <div class="t-body">
+     <div class="t-title">
+     <h3>${t.title}</h3>
+     <div class="t-id badge">${t.id}</div>
+     </div>
+     <div class="time"><strong>Start:</strong> ${t.start}</div>
+     <div class="t-badges">${t.badges.map(b=>`<div class="badge">${b}</div>`).join('')}</div>
+     <div class="modes">${t.modes}</div>
+     <div class="progress-row">
+     <div class="progress-text">${t.progress} / ${t.total} Players</div>
+     <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;"></div></div>
+     </div>
+     <div class="prize-join">
+     <div class="prize">${t.prize}<small>Prize Pool</small></div>
+     <button class="btn join" onclick="joinTournament('${t.id}')">${t.buttonLabel}</button>
+     </div>
+     </div>`;
+     grid.appendChild(card);});
+   }
+
+    renderTournaments();
+    
+/* ---------- POPUP SCRIPT ---------- */
+const popup = document.getElementById('popupForm');
+const openBtn = document.getElementById('openPopupBtn');
+const closeBtn = document.getElementById('closePopup');
+const submitbtn = document.getElementById('submitPlayer');
+
+let playerInfo={};
+
+// Open popup
+openBtn.addEventListener('click', () => {
+  popup.style.display = 'flex';
+});
+
+
+// Close popup
+closeBtn.addEventListener('click', () => {
+  popup.style.display = 'none';
+});
+
+// Close if clicked outside the popup
+popup.addEventListener('click', (e) => {
+  if (e.target === popup) {
+    popup.style.display = 'none';
+  }
+});
+
+//submit btn 
+
+  submitbtn.addEventListener('click',()=>{
+    const username=document.getElementById('username').value.trim();
+    const gameId=document.getElementById('gameId').value.trim();
+    if(!username||!gameId){alert('Enter both Username & Game ID'); 
+    return;}  
+     playerInfo={username,gameId};
+     alert('Your info has been added!');
+    popup.style.display='none';
+ });
+
+ //join tournament 
+   
+  function joinTournament(id){ 
+    const tour=tournaments.find(t=>t.id===id);
+     if(!playerInfo.username||!playerInfo.gameId){ alert('Please add your Username & Game ID first!'); return; }
+     if(tour.entryFee>0){ alert('This is a paid tournament. Please pay ₹'+tour.entryFee+' to join.'); return; } 
+    if(tour.progress>=tour.total){ alert('Tournament Full!'); return; }
+    tour.progress++;
+    renderTournaments();
+     alert('You have joined '+tour.title+' tournament successfully!');
+   }
+   
+   
+    // mobile menu
+    const mobileBtn = document.getElementById('mobile-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    mobileBtn.addEventListener('click', ()=> mobileMenu.classList.toggle('hidden'));
+  </script>
+  <!-- <script type="module" src="js/firebase.js"></script>
+<script type="module" src="js/tournament.js"></script> -->
+
+</body>
+</html>
